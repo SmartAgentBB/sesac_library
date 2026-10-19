@@ -161,3 +161,12 @@
 .btn-press:active {
   transform: scale(0.98);
 }
+
+/* 도서 상세 화면 스와이프 제스처 최적화 */
+#bookDetailView {
+  will-change: transform, opacity;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}

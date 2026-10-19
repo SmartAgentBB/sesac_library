@@ -145,6 +145,10 @@ function showScreen(screen) {
     bookListView.classList.add('page-fade-in');
     renderDashboard();
   } else if (screen === 'bookDetail') {
+    bookDetailView.style.transform = '';
+    bookDetailView.style.webkitTransform = '';
+    bookDetailView.style.opacity = '';
+    bookDetailView.style.transition = '';
     bookDetailView.classList.remove('hidden');
     bookDetailView.classList.add('page-fade-in');
     if (detailScrollContainer) {
@@ -152,6 +156,33 @@ function showScreen(screen) {
     }
   }
   window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+/**
+ * 도서 상세 화면 닫기 (목록 화면으로 복귀)
+ */
+function closeDetailView(animated = false) {
+  if (animated) {
+    bookDetailView.style.transition = '-webkit-transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease-out';
+    bookDetailView.style.transform = 'translate3d(100%, 0, 0)';
+    bookDetailView.style.webkitTransform = 'translate3d(100%, 0, 0)';
+    bookDetailView.style.opacity = '0';
+    setTimeout(() => {
+      bookDetailView.style.transform = '';
+      bookDetailView.style.webkitTransform = '';
+      bookDetailView.style.opacity = '';
+      bookDetailView.style.transition = '';
+      selectedBook = null;
+      showScreen('bookList');
+    }, 220);
+  } else {
+    bookDetailView.style.transform = '';
+    bookDetailView.style.webkitTransform = '';
+    bookDetailView.style.opacity = '';
+    bookDetailView.style.transition = '';
+    selectedBook = null;
+    showScreen('bookList');
+  }
 }
 
 /**
@@ -239,8 +270,7 @@ function setupEventListeners() {
 
   // 6. 도서 상세 뒤로가기
   detailBackBtn.addEventListener('click', () => {
-    selectedBook = null;
-    showScreen('bookList');
+    closeDetailView();
   });
 
   // 7. 대여 신청 확인 모달 이벤트
@@ -259,6 +289,156 @@ function setupEventListeners() {
   });
   returnModal.addEventListener('click', (e) => {
     if (e.target === returnModal) hideReturnModal();
+  });
+
+  // 9. 도서 상세 화면 좌->우 슬라이드(스와이프) 제스처 등록
+  setupDetailSwipeGesture();
+}
+
+/**
+ * 책 상세 화면에서 화면을 왼쪽에서 오른쪽 방향으로 슬라이드하면 목록 화면으로 돌아가는 제스처 (iOS Safari 및 Android 완벽 지원)
+ */
+function setupDetailSwipeGesture() {
+  if (!bookDetailView) return;
+
+  let startX = 0;
+  let startY = 0;
+  let currentX = 0;
+  let currentY = 0;
+  let startTime = 0;
+  let isTracking = false;
+  let isSwiping = false;
+  let directionDecided = false;
+
+  // 1. 공통 터치/마우스 시작 처리
+  const handleStart = (clientX, clientY, isMouse = false) => {
+    if (isTracking) return;
+    if (bookDetailView.classList.contains('hidden')) return;
+    if (checkoutModal && !checkoutModal.classList.contains('hidden')) return;
+    if (returnModal && !returnModal.classList.contains('hidden')) return;
+
+    startX = clientX;
+    startY = clientY;
+    currentX = startX;
+    currentY = startY;
+    startTime = Date.now();
+    isTracking = true;
+    isSwiping = false;
+    directionDecided = false;
+    bookDetailView.style.transition = 'none';
+  };
+
+  // 2. 공통 터치/마우스 이동 처리
+  const handleMove = (clientX, clientY, e) => {
+    if (!isTracking) return;
+
+    currentX = clientX;
+    currentY = clientY;
+    const deltaX = currentX - startX;
+    const deltaY = currentY - startY;
+
+    // 슬라이드 방향 판정 (5px 이상 움직였을 때)
+    if (!directionDecided) {
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+
+      if (absX > 5 || absY > 5) {
+        directionDecided = true;
+        // 세로 스크롤이거나 왼쪽 드래그(deltaX <= 0)인 경우 -> 일반 스크롤 허용하고 스와이프 취소
+        if (absY >= absX || deltaX <= 0) {
+          isTracking = false;
+          bookDetailView.style.transform = '';
+          bookDetailView.style.webkitTransform = '';
+          bookDetailView.style.opacity = '';
+          return;
+        } else {
+          // 오른쪽 슬라이드로 확정
+          isSwiping = true;
+        }
+      }
+    }
+
+    if (isSwiping && deltaX > 0) {
+      // iOS Safari에서 기본 스크롤 및 바운스 차단 (passive: false 일 때 동작)
+      if (e && e.cancelable) {
+        e.preventDefault();
+      }
+      const maxDist = Math.max(window.innerWidth, 380);
+      const opacity = Math.max(0.3, 1 - (deltaX / maxDist) * 0.45);
+      bookDetailView.style.transform = `translate3d(${deltaX}px, 0, 0)`;
+      bookDetailView.style.webkitTransform = `translate3d(${deltaX}px, 0, 0)`;
+      bookDetailView.style.opacity = opacity.toString();
+    }
+  };
+
+  // 3. 공통 터치/마우스 종료 처리
+  const handleEnd = () => {
+    if (!isTracking && !isSwiping) return;
+
+    if (isSwiping) {
+      const deltaX = currentX - startX;
+      const deltaTime = Date.now() - startTime;
+      // 빠른 플릭(350ms 이내 & 35px 이상 이동) 또는 임계치(55px 또는 화면의 18% 이상 이동)
+      const isQuickFlick = deltaTime < 350 && deltaX > 35;
+      const isThresholdPassed = deltaX > 55 || deltaX > (window.innerWidth * 0.18);
+
+      if (isQuickFlick || isThresholdPassed) {
+        closeDetailView(true);
+      } else {
+        // 원래 위치로 복귀
+        bookDetailView.style.transition = '-webkit-transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease-out';
+        bookDetailView.style.transform = 'translate3d(0, 0, 0)';
+        bookDetailView.style.webkitTransform = 'translate3d(0, 0, 0)';
+        bookDetailView.style.opacity = '1';
+        setTimeout(() => {
+          bookDetailView.style.transform = '';
+          bookDetailView.style.webkitTransform = '';
+          bookDetailView.style.opacity = '';
+          bookDetailView.style.transition = '';
+        }, 200);
+      }
+    }
+
+    isTracking = false;
+    isSwiping = false;
+    directionDecided = false;
+  };
+
+  // --- [모바일 터치 이벤트: iOS Safari & Android] ---
+  bookDetailView.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    handleStart(touch.clientX, touch.clientY, false);
+  }, { passive: true });
+
+  window.addEventListener('touchmove', (e) => {
+    if (!isTracking || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    handleMove(touch.clientX, touch.clientY, e);
+  }, { passive: false });
+
+  window.addEventListener('touchend', () => {
+    handleEnd();
+  }, { passive: true });
+
+  window.addEventListener('touchcancel', () => {
+    handleEnd();
+  }, { passive: true });
+
+  // --- [데스크톱 마우스 이벤트] ---
+  bookDetailView.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    if (e.target.closest('button, a, input, textarea, select')) return;
+    handleStart(e.clientX, e.clientY, true);
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isTracking) return;
+    handleMove(e.clientX, e.clientY, e);
+  });
+
+  window.addEventListener('mouseup', () => {
+    handleEnd();
   });
 }
 
@@ -539,7 +719,7 @@ function renderRentedList(items) {
         
         <div class="flex items-center justify-between mt-2 pt-2 border-t border-border-subtle text-[11px]">
           <div class="flex flex-col">
-            <span class="text-text-muted">대여자: <span class="font-medium text-text-sub">${maskEmail(rental.userEmail)}</span></span>
+            <span class="text-text-muted">대여자: <span class="font-medium text-text-sub">${rental.userEmail || '-'}</span></span>
             <span class="text-text-muted">대여일: <span class="font-mono text-text-sub">${rentDateFormatted}</span></span>
           </div>
           <div class="flex items-center gap-2">
@@ -640,7 +820,7 @@ function updateDetailView(bookNum) {
     const isMine = (rental.userEmail === currentEmail);
 
     detailRentalInfoCard.classList.remove('hidden');
-    detailRentedUser.textContent = isMine ? `${rental.userEmail} (본인)` : maskEmail(rental.userEmail);
+    detailRentedUser.textContent = isMine ? `${rental.userEmail} (본인)` : (rental.userEmail || '-');
     detailRentDate.textContent = formatDate(rental.rentDate);
     detailDueDate.textContent = `${dueInfo.formattedDate} (${dueInfo.diffText})`;
 
