@@ -677,7 +677,6 @@ function renderRentedList(items) {
 
   items.forEach(({ book, rental }) => {
     const dueInfo = calculateDueInfo(rental.dueDate);
-    const rentDateFormatted = formatDate(rental.rentDate);
     const isMine = rental.userEmail === currentEmail;
 
     const card = document.createElement('article');
@@ -720,21 +719,17 @@ function renderRentedList(items) {
         <div class="flex items-center justify-between mt-2 pt-2 border-t border-border-subtle text-[11px]">
           <div class="flex flex-col">
             <span class="text-text-muted">대여자: <span class="font-medium text-text-sub">${rental.userEmail || '-'}</span></span>
-            <span class="text-text-muted">대여일: <span class="font-mono text-text-sub">${rentDateFormatted}</span></span>
+            <span class="text-text-muted">반납 예정일: <span class="font-mono font-bold ${dueInfo.isOverdue ? 'text-badge-red' : 'text-primary'}">${dueInfo.formattedDate}</span></span>
           </div>
           <div class="flex items-center gap-2">
-            <div class="flex flex-col text-right">
-              <span class="text-text-muted">반납 예정일</span>
-              <span class="font-bold font-mono ${dueInfo.isOverdue ? 'text-badge-red' : 'text-primary'}">
-                ${dueInfo.formattedDate}
-              </span>
-            </div>
             ${isMine ? `
               <button type="button" class="px-2.5 py-1 rounded-md text-[11px] font-bold text-white ${dueInfo.isOverdue ? 'bg-badge-red hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'} transition flex items-center gap-0.5 shadow-xs shrink-0 active:scale-95" onclick="event.stopPropagation(); promptReturnBook(${book.num}, '${escapeString(book.title)}')">
                 <span class="material-symbols-outlined text-[13px]">assignment_return</span>
                 반납
               </button>
-            ` : ''}
+            ` : `
+              <span class="material-symbols-outlined text-[18px] text-text-muted">chevron_right</span>
+            `}
           </div>
         </div>
       </div>
