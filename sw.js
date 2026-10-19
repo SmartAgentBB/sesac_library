@@ -1,10 +1,10 @@
-const CACHE_NAME = 'sesac-library-v11';
+const CACHE_NAME = 'sesac-library-v12';
 
 const STATIC_ASSETS = [
   './',
   './index.html',
   './app.js',
-  './app.js?v=6',
+  './app.js?v=7',
   './firebase-config.js',
   './firebase-config.js?v=4',
   './styles.css',
