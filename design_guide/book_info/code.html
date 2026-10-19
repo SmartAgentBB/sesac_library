@@ -1,0 +1,226 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><title>도서 상세 - 송파SeSAC 도서관</title><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Pretendard:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "#1882ff",
+          "primary-hover": "#0c70e8",
+          surface: "#ffffff",
+          "surface-alt": "#f7f9fa",
+          "line-subtle": "#eef1f4",
+          "line-medium": "#e2e6ea",
+          "text-strong": "#191f28",
+          "text-normal": "#333d4b",
+          "text-subtle": "#6b7684",
+          "text-muted": "#8b95a1",
+          secondary: "#555f6e"
+        },
+        fontFamily: {
+          sans: ["Pretendard", "Plus Jakarta Sans", "-apple-system", "sans-serif"]
+        }
+      }
+    }
+  }
+</script><style>
+  @layer base {
+    body {
+      font-family: 'Pretendard', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+    }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+  }
+  ::-webkit-scrollbar { display: none; }
+</style></head><body class="bg-surface text-text-normal flex flex-col h-screen max-h-[100dvh] overflow-hidden relative">
+<!-- Scrollable Content Area: 책 표지, 제목, 도서 소개 등 전체 내용 스크롤 -->
+<div class="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+  <!-- Top Hero & Blur Background (IMAGE_2 Inspired) -->
+  <div class="relative w-full bg-gradient-to-b from-[#6b829e] via-[#94a9bf] to-[#c7d5e4] pt-safe transition-colors duration-300 overflow-hidden">
+  <!-- Soft blurred ambient gradient glow like IMAGE_2 -->
+  <div class="absolute inset-0 bg-cover bg-center blur-2xl scale-125 opacity-60 pointer-events-none" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCshOzDshEV8D1JdLvWUd0OCNR-OOGHHQpSOvb_xIUAltjBwAM73f28Uk9l253NIZOFsurzRAMSsJjicgkyrYgVOwMAjdAIZU9Pu-GLXZbHZrvHoqdadvT8yUQjlJq3_caENTTSSnFnLtRSzHtNFOAKW3BYqul6PpIG2mnJEFZ0ksPQUqsv4-UrQY8X03El9HF_nqGrXVFw5R6Dp0qejyffFQqUAt14kTcDiKpPJ3fx4b36_Q2eWUiq');"></div>
+  <div class="absolute inset-0 bg-black/10 pointer-events-none"></div>
+  <!-- Navigation Header -->
+  <header class="relative z-20 flex items-center justify-between px-4 h-14 text-white">
+  <button aria-label="뒤로가기" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20 active:scale-95 transition-transform" type="button">
+  <span class="material-symbols-outlined text-[26px]">arrow_back_ios_new</span>
+  </button>
+  <div class="flex items-center gap-1.5">
+
+  <button aria-label="메뉴 더보기" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20 active:scale-95 transition" type="button">
+  <span class="material-symbols-outlined text-[24px]">more_vert</span>
+  </button>
+  </div>
+  </header>
+  <!-- Book Cover Presentation (IMAGE_2 clean 3D Book Layout) -->
+  <div class="relative z-10 flex justify-center pt-2 pb-6 px-4">
+  <div class="relative group">
+  <!-- 3D Shadow -->
+  <div class="absolute inset-0 bg-black/30 blur-xl transform translate-y-4 scale-95 rounded-lg"></div>
+  <!-- Book Wrap -->
+  <div class="relative w-40 sm:w-44 aspect-[1/1.45] rounded-md overflow-hidden shadow-2xl bg-white border border-white/20">
+  <img alt="트렌드 코리아 2027 도서 표지" class="w-full h-full object-cover" id="bookCoverImg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCshOzDshEV8D1JdLvWUd0OCNR-OOGHHQpSOvb_xIUAltjBwAM73f28Uk9l253NIZOFsurzRAMSsJjicgkyrYgVOwMAjdAIZU9Pu-GLXZbHZrvHoqdadvT8yUQjlJq3_caENTTSSnFnLtRSzHtNFOAKW3BYqul6PpIG2mnJEFZ0ksPQUqsv4-UrQY8X03El9HF_nqGrXVFw5R6Dp0qejyffFQqUAt14kTcDiKpPJ3fx4b36_Q2eWUiq">
+  <div class="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/5 pointer-events-none"></div>
+  <div class="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-r from-black/40 via-white/10 to-transparent pointer-events-none"></div>
+  </div>
+  </div>
+  </div>
+  </div>
+  <!-- White Curved Container Overlay (IMAGE_2 Style Body) -->
+  <main class="relative z-20 -mt-5 flex-1 bg-surface rounded-t-[24px] shadow-[0_-4px_20px_rgba(0,0,0,0.06)] pb-8">
+  <div class="pt-6 px-5 max-w-lg mx-auto">
+  <!-- Title & Info Chip Row -->
+  <div class="flex items-start justify-between gap-3">
+  <h1 class="text-[20px] font-bold text-text-strong leading-[1.35] tracking-tight">
+            트렌드 코리아 2027 : 2027 대한민국 소비트렌드 전망
+          </h1>
+
+  </div>
+  <!-- Metadata Line -->
+  <div class="mt-2 flex items-center flex-wrap gap-x-2 text-[14px] text-text-subtle"><span class="">경영/경제</span><span class="text-line-medium">|</span><span class="">김난도 외 12명</span></div>
+  <!-- Ratings & Likes -->
+
+  <!-- Quick Action / Status Badges (IMAGE_2 style banner rows) -->
+
+  <!-- Preview Button -->
+
+  <!-- Tab Menu (IMAGE_2 inspired: [정보] [도서 소개] [대여 현황]) -->
+
+  <!-- Tab Content Area -->
+  <div class="py-6" id="tabPanelContent"><div class="space-y-4 pt-2 border-t border-line-subtle"><h2 class="text-[17px] font-bold text-text-strong tracking-tight">도서 소개</h2><div class="text-[15px] leading-relaxed text-text-normal space-y-3 font-normal"><p class="font-semibold text-text-strong">무리에서 벗어나 변화에 앞장서는 ALPHA SHEEP</p><p class="">‘알파alpha, α’는 그리스어의 첫 글자로서 최초 · 시작의 의미를 가진다. 소프트웨어를 개발할 때 처음으로 하는 내부 테스트를 ‘알파’ 테스트, 우주 탐사 같은 새로운 기술 프로젝트를 ‘알파’ 프로젝트라고 한다. 특히 무리에서 가장 탁월하고 앞장서는 존재를 지칭할 때에도 ‘알파독’ · ‘알파메일’ 하는 식으로 ‘알파’라는 단어를 쓴다.</p><p class="">이에 양떼처럼 시류에 순응해 휩쓸려 다니기보다는 그 무리에서 뛰쳐나와 자신만의 생각을 처음으로 실행할 수 있는 존재가 되자는 취지에서, 2027년의 슬로건은 ‘ALPHA SHEEP’으로 정했다. 양은 순한 것 같아도, 매우 고집 세고 공격적인 동물이라고 한다.</p><p class="">사회경제적 양극화와 인공지능의 거센 물결이 글로벌 사회를 휩쓰는 현대사회에서 트렌드에 대응하면서도 알파쉽으로서의 능동적인 실행력이 그 어느 때보다도 절실한 2027년이 될 것이다. 대한민국 No.1 트렌드서, 준비된 2027년을 위한 최고의 선택!</p></div></div></div>
+  </div>
+  </main>
+</div>
+<!-- Sticky Bottom Bar: 스크롤과 분리되어 항상 하단에 고정 -->
+<footer class="shrink-0 z-40 bg-surface/95 backdrop-blur-md border-t border-line-subtle pb-safe px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+<div class="max-w-lg mx-auto flex items-center gap-3"><button class="w-full h-12 rounded-xl bg-primary hover:bg-primary-hover active:scale-[0.98] text-white font-bold text-[16px] shadow-sm transition flex items-center justify-center gap-1.5" onclick="showToast('대여 신청이 완료되었습니다.')" type="button"><span class="">대여 신청</span></button></div>
+</footer>
+<!-- Modal Overlay: 대여 신청 확인 (Requested: No '수령방식' row) -->
+<!-- Toast Notification -->
+<div class="fixed top-6 left-1/2 -translate-x-1/2 z-50 hidden items-center gap-2 px-4 py-2.5 rounded-full bg-text-strong text-white shadow-xl text-[13px] font-medium transition-all duration-300" id="toastNotification">
+<span class="material-symbols-outlined text-[18px] text-emerald-400" id="toastIcon">check_circle</span>
+<span id="toastMessage" class="">신청이 정상적으로 완료되었습니다.</span>
+</div>
+<!-- Interactive Scripts -->
+<script>
+    function openRentalModal() {
+      const modal = document.getElementById('rentalModalOverlay');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeRentalModal() {
+      const modal = document.getElementById('rentalModalOverlay');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      toastMsg.textContent = message;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 3000);
+    }
+
+    function confirmRentalAction() {
+      closeRentalModal();
+      showToast('대여 신청이 완료되었습니다! (반납기한: 2025.03.03)');
+    }
+
+    function toggleWish(btn) {
+      const icon = btn.querySelector('.material-symbols-outlined');
+      if (icon) {
+        if (icon.textContent === 'favorite_border' || icon.textContent === 'add_circle_outline') {
+          icon.textContent = 'favorite';
+          icon.style.fontVariationSettings = "'FILL' 1";
+          icon.classList.add('text-rose-500');
+          showToast('관심 도서에 추가되었습니다.');
+        } else {
+          icon.textContent = btn.classList.contains('px-3') ? 'add_circle_outline' : 'favorite_border';
+          icon.style.fontVariationSettings = "'FILL' 0";
+          icon.classList.remove('text-rose-500');
+          showToast('관심 도서에서 제외되었습니다.');
+        }
+      }
+    }
+
+    function switchDetailTab(type) {
+      const tabs = ['tabInfo', 'tabIntro', 'tabStatus'];
+      tabs.forEach(t => {
+        const el = document.getElementById(t);
+        if (el) {
+          el.className = "flex-1 py-3 text-center text-[15px] font-medium text-text-subtle border-b-2 border-transparent hover:text-text-strong transition";
+        }
+      });
+
+      const activeEl = document.getElementById(type === 'info' ? 'tabInfo' : type === 'intro' ? 'tabIntro' : 'tabStatus');
+      if (activeEl) {
+        activeEl.className = "flex-1 py-3 text-center text-[15px] font-bold text-text-strong border-b-2 border-text-strong";
+      }
+
+      const panel = document.getElementById('tabPanelContent');
+      if (type === 'info') {
+        panel.innerHTML = `
+          <div class="space-y-4">
+            <h2 class="text-[17px] font-bold text-text-strong tracking-tight">작품 소개</h2>
+            <div class="text-[15px] leading-relaxed text-text-normal space-y-3 font-normal">
+              <p>
+                무리에서 벗어나 가장 먼저 변화를 시도하라. <br>
+                ‘알파alpha, α’는 그리스어의 첫 글자로서 최초·시작의 의미를 가진다. 2027년 소비 트렌드는 생성형 AI 에이전트와 자율화 기술이 개인의 일상과 비즈니스에 본격 융합되며 새로운 표준을 형성합니다.
+              </p>
+              <p class="text-text-subtle text-[14px]">
+                수강생 및 실무 연구진을 위해 기술 환경 변화와 사내 생산성 혁신의 교차점을 일목요연하게 짚어낸 필독 추천 도서입니다.
+              </p>
+            </div>
+            <div class="mt-6 rounded-2xl bg-surface-alt p-4 space-y-3 border border-line-subtle">
+              <h3 class="text-[14px] font-bold text-text-strong">도서 기본 정보</h3>
+              <div class="grid grid-cols-2 gap-y-2 text-[13px]">
+                <div class="text-text-subtle">ISBN</div>
+                <div class="text-text-strong font-medium">979-11-9234-88-2</div>
+                <div class="text-text-subtle">청구기호</div>
+                <div class="text-text-strong font-medium font-mono text-primary">004.73-T24a</div>
+                <div class="text-text-subtle">페이지 / 판형</div>
+                <div class="text-text-strong font-medium">416쪽 · 152*223mm</div>
+                <div class="text-text-subtle">소장 위치</div>
+                <div class="text-text-strong font-medium">3층 스마트컴퓨팅 존 (12-B)</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (type === 'intro') {
+        panel.innerHTML = `
+          <div class="space-y-4">
+            <h2 class="text-[17px] font-bold text-text-strong">목차 요약</h2>
+            <ul class="space-y-2 text-[14px] text-text-normal">
+              <li class="p-3 bg-surface-alt rounded-xl font-medium">1부. 2027 대한민국 소비트렌드 메가시프트</li>
+              <li class="p-3 bg-surface-alt rounded-xl font-medium">2부. 옴니채널과 자율형 에이전트 커머스</li>
+              <li class="p-3 bg-surface-alt rounded-xl font-medium">3부. 알파세대와 세대별 분기점 전략</li>
+              <li class="p-3 bg-surface-alt rounded-xl font-medium">4부. 지속가능성과 스마트 리테일의 미래</li>
+            </ul>
+          </div>
+        `;
+      } else {
+        panel.innerHTML = `
+          <div class="space-y-4">
+            <h2 class="text-[17px] font-bold text-text-strong">도서관 대여 현황</h2>
+            <div class="p-4 rounded-xl bg-surface-alt border border-line-subtle flex items-center justify-between">
+              <div>
+                <span class="text-[14px] font-bold text-emerald-600 block">대여 가능 (1권 보유 중)</span>
+                <span class="text-[12px] text-text-subtle">총 비치 1권 / 대여 가능 1권</span>
+              </div>
+              <span class="px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-700 text-[12px] font-semibold">비치중</span>
+            </div>
+          </div>
+        `;
+      }
+    }
+  </script>
+
+
+</body></html>

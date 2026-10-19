@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 송파 SeSAC 도서 대여 시스템 컬렉션
+    // 필요 시 request.auth != null 조건으로 제한 가능
+    match /rentals/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

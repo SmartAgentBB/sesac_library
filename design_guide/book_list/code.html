@@ -1,0 +1,420 @@
+<!DOCTYPE html><html lang="ko" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Pretendard:wght@400;500;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          primary: "#005ea4",
+          "primary-dark": "#004881",
+          "primary-light": "#e8f2ff",
+          surface: "#ffffff",
+          "surface-alt": "#f8f9fa",
+          "border-subtle": "#f1f3f5",
+          "border-line": "#e9ecef",
+          "text-main": "#191f28",
+          "text-sub": "#8b95a1",
+          "text-muted": "#adb5bd",
+          "badge-red": "#e03131",
+          "badge-red-bg": "#fff5f5",
+          "badge-blue": "#005ea4",
+          "badge-blue-bg": "#eff6ff",
+          "star-color": "#f03e3e"
+        },
+        fontFamily: {
+          sans: ["Pretendard", "Plus Jakarta Sans", "-apple-system", "BlinkMacSystemFont", "sans-serif"]
+        }
+      }
+    }
+  };
+</script><style>
+  @layer base {
+    html, body {
+      width: 100vw;
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff;
+      color: #191f28;
+      font-family: 'Pretendard', -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      overscroll-behavior: none;
+    }
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+    .pt-safe { padding-top: env(safe-area-inset-top, 0px); }
+  }
+  ::-webkit-scrollbar { display: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  .book-spine-shadow {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), inset -1px 0 2px rgba(0, 0, 0, 0.05);
+  }
+</style></head><body class="bg-white flex flex-col min-h-screen font-sans text-text-main">
+<!-- 1. 상단 헤더: 깔끔한 화이트 배경 + 타이틀 + 계정 상태 -->
+<header class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md pt-safe border-b border-border-subtle"><div class="h-14 px-4 flex items-center justify-between"><div class="flex items-center gap-2 min-w-0"><img alt="송파SeSAC 도서관 로고" class="h-7 w-auto object-contain flex-shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1Va0OZJE4UbaB-LR_6ui26JYKnri7o6Ezyv7sZu7GvHsabZebPfzWmY5VVC7fcXvJDK_96bf17pLlt-qZLCy7O_TzN6_TEFHzmNzwbSr_LqkwVdehJkVs_7EC3Odmb9I68yLNt83TFXr84ovPIvsN1JHphCLCDYcvhPvQ0R4JILnTYg_7nBHRn17hRRK6K6-dxddM-wT5UF0IpIV4RfZMjF9sTE03hZNnBV66Ylfj13uXHzaf_FDfWuKg"><h1 class="text-[17px] font-bold text-text-main tracking-tight truncate">송파SeSAC 도서관</h1></div><div class="flex items-center gap-2 flex-shrink-0"><button class="w-8 h-8 flex items-center justify-center text-text-sub hover:text-text-main transition-colors" title="로그아웃" type="button"><span class="material-symbols-outlined text-[20px]">logout</span></button></div></div></header>
+<!-- 메인 콘텐츠 영역 -->
+<main class="flex-1 flex flex-col w-full pt-[calc(3.5rem+env(safe-area-inset-top,0px))] bg-white pb-safe"><div class="flex flex-col w-full">
+<!-- 2. 대여 상태 배너: 담백한 플랫 카드 형태 -->
+<div class="px-4 pt-3 pb-2">
+<div class="p-3.5 rounded-lg bg-surface-alt border border-border-line flex items-center justify-between">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="text-[13px] font-bold text-text-main">대여 현황</span>
+<span class="text-[12px] text-text-sub font-mono">songpa28@iceu.kr</span>
+</div>
+<div class="text-[13px] text-text-sub mt-0.5">
+          대여 가능 <strong class="text-primary font-bold">1권</strong> <span class="mx-1 text-border-line">|</span> 대여 중 <strong class="text-text-main font-bold">1권</strong> <span class="text-[11px] text-text-muted">(최대 2권 / 7일간)</span>
+</div>
+</div>
+<div class="flex items-center">
+
+</div>
+</div>
+</div>
+<!-- 검색 바 -->
+<div class="px-4 py-2">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-text-muted text-[19px] pointer-events-none">search</span>
+<input class="w-full h-10 pl-9 pr-9 bg-surface-alt text-text-main placeholder:text-text-muted text-[14px] rounded-lg border-0 focus:ring-1 focus:ring-primary focus:bg-white transition-all" id="catalogSearchInput" placeholder="도서명, 저자, 카테고리 검색..." type="search">
+<button class="absolute right-2.5 text-text-sub hover:text-text-main" title="바코드 스캔" type="button">
+
+</button>
+</div>
+</div>
+<!-- 카테고리 칩 -->
+<div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-4 py-1.5">
+<button class="category-chip active px-3 py-1 rounded-full text-[12px] font-semibold flex-shrink-0 bg-text-main text-white transition-all" data-category="ALL" type="button">전체 13</button>
+<button class="category-chip px-3 py-1 rounded-full text-[12px] font-medium flex-shrink-0 bg-surface-alt text-text-sub hover:text-text-main transition-all" data-category="AI" type="button">인공지능 6</button>
+<button class="category-chip px-3 py-1 rounded-full text-[12px] font-medium flex-shrink-0 bg-surface-alt text-text-sub hover:text-text-main transition-all" data-category="CODING" type="button">코딩·개발 3</button>
+<button class="category-chip px-3 py-1 rounded-full text-[12px] font-medium flex-shrink-0 bg-surface-alt text-text-sub hover:text-text-main transition-all" data-category="FINANCE" type="button">재테크·경제 3</button>
+<button class="category-chip px-3 py-1 rounded-full text-[12px] font-medium flex-shrink-0 bg-surface-alt text-text-sub hover:text-text-main transition-all" data-category="MY" type="button">내 대여 1</button>
+</div>
+<!-- 4. 세그먼트 컨트롤 탭 (서점 베스트셀러 목록 스타일) -->
+<div class="px-4 pt-3 pb-1">
+<div class="flex border-b border-border-line">
+<button class="tab-btn flex-1 pb-2.5 text-center text-[14px] font-medium text-text-sub hover:text-text-main border-b-2 border-transparent transition-colors flex items-center justify-center gap-1.5" id="tabBtnAvailable" onclick="switchCatalogTab('available')" type="button">
+<span class="">대여 가능 도서</span>
+<span class="text-[12px] font-bold text-primary">8</span>
+</button>
+<button class="tab-btn flex-1 pb-2.5 text-center text-[14px] font-bold text-text-main border-b-2 border-primary transition-colors flex items-center justify-center gap-1.5" id="tabBtnRented" onclick="switchCatalogTab('rented')" type="button">
+<span class="">대여 중&nbsp; &nbsp;</span>
+<span class="text-[12px] font-medium text-badge-red">5</span>
+</button>
+</div>
+</div>
+<!-- 3. SECTION 1: 대여 가능 도서 목록 (IMAGE_3 레퍼런스 스타일) -->
+<section class="flex flex-col transition-opacity duration-200 hidden" id="sectionAvailable">
+<div class="flex flex-col divide-y divide-border-subtle" id="availableBooksList">
+<!-- Book 1 (★ 추천 / 1순위) -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('book-1')">
+
+<div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+<img class="w-full h-full object-cover" data-alt="AI 에이전트 책 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCP2KHH282JIIIpG-xDP0xF-tw--Hn8EDd6PMnu8m5wCGHdxYGt-4B5OGpth0B0XxOLaGhb1KPOqd2eBelJXIaf_9BG8Vhdtp5uXlGC-7vcTjWvTMf-OpK1fy7WEFL0oBrtzSdt6dSlHNa-XVnIBG72J-OMK0jxhWdMhh54m73Swo3tqNfmQY-Wvg7SPopxw0_7NTwnifz2TdlthSNTXlC-qRO_tTdK5Nkz8T25jfvrsBkndpwRBFIB">
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">인공지능</span>
+
+</div>
+<h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">AI 에이전트, 우리는 이렇게 씁니다</h2>
+<p class="text-[13px] text-text-sub mt-0.5 truncate">이승현 외 3인 · 위키북스</p>
+
+</div>
+
+</article>
+<!-- Book 2 (순위 1) -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('book-2')">
+
+<div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+<img class="w-full h-full object-cover" data-alt="7인의 AI 드림팀 만들기 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAPpCgQv4N25Jd_w61ULnySr3ke_QVJ80Ca40pUmL4_vIFLpD8_pXJ-EdaSyI0LQp7ZtbgjVB4cfdMd4de1HtAIXFcIs5FkyrBJJxv-Fndawa3-RD62nyJpI_EB0JLSSnCtzr0v4khG-tVtnuTyHT5j8RX6TT9OKf3pLPaL7w_f8paZ-t1t_5s5JQ_vorGzAq8QhwwfxeRbICPQvP6OmLziXNbw2P8fcvg7wNfT7EoOs3p1VnL00hzF">
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">AI 협업</span>
+
+</div>
+<h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">7인의 AI 드림팀 만들기</h2>
+<p class="text-[13px] text-text-sub mt-0.5 truncate">박지훈 · 한빛미디어</p>
+
+</div>
+
+</article>
+<!-- Book 3 (순위 2) -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('book-3')">
+
+<div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+<img class="w-full h-full object-cover" data-alt="AI 게임 개발 with 코덱스 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcoo0p04UjozUk4eeKjJsuAnPZauwl-j_mZP2UZZ63rdBYuBMSkibKsbrKlM_ojab2QLbtIFwJ7uIxSQZdfN5eiw8JmoyejyidTMK9Uh6gjq-htVobHJq-tG65PAuHYztx7ZK9SexbC_CspILC48VXUtRHvhiCskyEygmqkCl-sDdzwn4NkX6dPI4aUdhYRi5osmAzlfDswoEMDJmu2L7W4BHJeATpFL6gbunM_FLyTL-Cg65nYs5i">
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">코딩·개발</span>
+
+</div>
+<h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">AI 게임 개발 with 코덱스</h2>
+<p class="text-[13px] text-text-sub mt-0.5 truncate">김동우 · 길벗</p>
+
+</div>
+
+</article>
+<!-- Book 4 (순위 3) -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('book-4')">
+
+<div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+<img class="w-full h-full object-cover" data-alt="트렌드 코리아 2027 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-fh3YCFSkbfld1Z27znO0x_jKX5_ZE5Bhhq2ZiQilPFhjrDrkx0kt659ga5gH9r3TLOwbrnsP-mQPgKREYe7b04dxVo0TMtiYqGZ3C0aQLKV7tl_3PwBBiWcZDDoeX58iBuoVb065eIP4VTmgis37p1GVBfYf7FgTBUSokBok9l6fEUlNZhS500RYNV9YhkbgwhlF_17VJgB7n9buKEbrRTHAskBnBpV89m5jZCjND8eSsyycyarQ">
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">트렌드</span>
+
+</div>
+<h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">트렌드 코리아 2027</h2>
+<p class="text-[13px] text-text-sub mt-0.5 truncate">김난도 외 · 미래의창</p>
+
+</div>
+
+</article>
+<!-- Book 5 (순위 4) -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('book-5')">
+
+<div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+<img class="w-full h-full object-cover" data-alt="서버 구조와 기술 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAv8yOtCzjKsyQYvQpxkBNgViMWXcCO7ASEBmrZOn2YTyrymegxmfyuPbcASjpZgqbtrGN0vxzIJB2ae6D1OVh1giwsffWcwdtqYMFSXm_5nfIOOoCgzfT6BJSv8-mmwRzvVhXN_FTr7Ze-Q6BFJ96Zg2Xv20acXujBIUqbrGtClBPt_0ryYmYzQ6czrhkFYvgsS6oLj810Sy79ul3p4woPVWwc9Sq5JOrl3uF0F9cs8VSsoHq25aO3">
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">백엔드</span>
+
+</div>
+<h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">그림으로 이해하는 서버 구조와 기술</h2>
+<p class="text-[13px] text-text-sub mt-0.5 truncate">스즈키 타카히로 · 로드북</p>
+
+</div>
+
+</article>
+<!-- Book 6 (순위 5) -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('book-6')">
+
+<div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+<img class="w-full h-full object-cover" data-alt="바이브 코딩 1인 창업 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwyre_OK6eSKZYVO54fcr9LpD6SVLmDGuFZhGJMXLXCW_-fveKw8jN0dsM3j6z980LkwXdowr4ivLkUEbjHECX7egJVwkCxuaDq3ytxmlLjAi22FWrd9DSBohytEdqFmTy9ILOwHkkAyKkxo1lz7STzMtSWJDQENFZMKKRtyiTugfBS97zsDwP8n8HVqbXWuWmJnCyNIXaqQwQugjH843QS_34rZeSMoQBn_ShQ1UU7WeyqfNAAaYZ">
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">창업·AI</span>
+
+</div>
+<h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">조코딩의 바이브 코딩 1인 창업</h2>
+<p class="text-[13px] text-text-sub mt-0.5 truncate">조코딩 · 이지스퍼블리싱</p>
+
+</div>
+
+</article>
+<!-- Book 7 (순위 6) -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('book-7')">
+
+<div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+<img class="w-full h-full object-cover" data-alt="난생처음 AI x 부동산 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdp2trnZP-uxz4hmq0I5k9HCA0bwM1u8D3nYz57Na-BwzN3FpkVXlNAoYACT_TNEg3oUHkjBbmemp5zAgn0BWxR5M3m-02PaNEb88oeWFBsa4KYNDc-GLTESbDhAydhkx76-qUlCOLD5k8_5ye6lJZ3ub3BKgbh0fQCRHTItzOVuBW7gH0E0_aG_rAQzkqCsznkUyyxeXi74wFxnnlmGyxwLL6Pn4SEvh4gtOJUSPHsOB5NZ_aFM7l">
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">재테크</span>
+
+</div>
+<h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">난생처음 AI x 부동산</h2>
+<p class="text-[13px] text-text-sub mt-0.5 truncate">강혁진 · 다산북스</p>
+
+</div>
+
+</article>
+<!-- Book 8 (순위 7) -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('book-8')">
+
+<div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+<img class="w-full h-full object-cover" data-alt="피지컬 AI 2026 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWH878rWLUgW9tJF3EAAueCpH657eGQrXL--OIy7TquF_4VTRcIDvqw3iQVBKRbtvK0Rx3JoYbUO7FPZ2pTet5BCMjupMvvkVWpQEhWGyCB5FJbLScdcHX2xZvY6PAQ5XjcCCI3Ve19D6Tl7Woz09FxVKnPc3icd1iSXluqe_PNwGnGfckIElZaDOYtG39lGOeWv7mSEFEnZp810g5LHK6yyntAPDYF7FH7F4slpqGrf-F1bQ5QSYx">
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<div class="flex items-center gap-1.5 mb-1">
+<span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">미래기술</span>
+
+</div>
+<h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">피지컬 AI 2026</h2>
+<p class="text-[13px] text-text-sub mt-0.5 truncate">한상기 · 매일경제신문사</p>
+
+</div>
+
+</article>
+</div>
+</section>
+<!-- 4. SECTION 2: 대여 중 & 연체 도서 목록 (대여일 오래된 순) -->
+<section class="flex flex-col transition-opacity duration-200" id="sectionRented">
+<!-- 간결한 안내 바 -->
+<div class="p-4 bg-surface-alt/60 border-b border-border-line"><div class="flex items-center justify-between mb-2.5"><div class="flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">menu_book</span><span class="text-[14px] font-bold text-text-main">대여 중인 도서</span><span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary text-white">1권</span></div></div><div class="p-3.5 rounded-lg bg-white border border-border-line shadow-sm flex items-center gap-3.5"><div class="w-[64px] h-[90px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative"><img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDguq-MoqeehidiTi1P21fcxFI76xoDwueqgI332kzWS9GIp5UJIaxcpanoGHWO_JwAfqi9Vu5jZxrT7PyaQIurmDFNxV1hrH2pV5TV-mRqvoclNsrbvCZUGI7k-uZxKOigGKbQIxewOEwJmC8qHvWjJ-YZ8ofNWm1Vq9UGeIUWZ6nP4yQMuT3ZBgd9qdgnY2zRVEdyqr_v0E8eOzF_k5DOgAzjiWRrh8MpHlZonoNZ4ieGv6vAnju8" alt="하네스 엔지니어링 표지"></div><div class="flex-1 min-w-0 flex flex-col justify-between py-0.5"><div class="flex flex-col"><div class="flex items-center gap-1.5 mb-1"><span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">엔지니어링</span></div><h3 class="text-[14px] font-bold text-text-main leading-snug line-clamp-1">하네스 엔지니어링</h3><p class="text-[12px] text-text-sub mt-0.5 truncate">이지훈 · 에이콘출판사</p></div><div class="flex items-center justify-between mt-2 pt-2 border-t border-border-subtle"><div class="flex flex-col"><span class="text-[10px] text-text-muted">반납 기한</span><span class="text-[12px] font-bold text-primary font-mono">2025.02.26 (D-3)</span></div><button class="px-3 py-1.5 rounded-md bg-primary hover:bg-primary-dark text-white text-[12px] font-semibold shadow-sm transition-colors flex items-center gap-1" onclick="triggerBookReturn('하네스 엔지니어링')" type="button"><span class="material-symbols-outlined text-[15px]">assignment_return</span>반납 신청</button></div></div></div></div><div class="px-4 py-2.5 bg-surface-alt border-b border-border-subtle flex items-center justify-between text-[12px]">
+<span class="text-text-sub">대여일 오래된 순 정렬</span>
+<span class="font-semibold text-badge-red">연체 2건 · 대여 3건</span>
+</div>
+<div class="flex flex-col divide-y divide-border-subtle" id="rentedBooksList"><!-- Rented 1: 연체 -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('rented-1')">
+  
+  <div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+    <img class="w-full h-full object-cover" data-alt="바이브 코딩 프로덕션의 원칙 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2BOWWXNVpWUBnzYett-rvInZwbqX_rnYJpbXQPrqZ8Aj0O1HMvMR9pZpdKGt1pNLC3MA6J39AUuSlzST1y91BmevbWNrYNIVE-GrWiqdiKfYISv3yA9FXKfQ1xu7zZThCTJfyzxD9lveCcqcbWLPe-CuFy9FaQmFIG0BE7yFhCnaOANFT15YuHItBVy4BqUw_-8fcvCPKKeCIY9smuc-aHiPvuqYqh9qC3WfpacDj7WBIsnTnkf87">
+  </div>
+  <div class="flex-1 min-w-0 flex flex-col justify-center">
+    <div class="flex items-center gap-1.5 mb-1">
+      <span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">개발·AI</span>
+      <span class="text-[10px] font-bold text-badge-red px-1.5 py-0.5 rounded bg-badge-red-bg">연체 7일</span>
+    </div>
+    <h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">바이브 코딩: 프로덕션의 원칙</h2>
+    <p class="text-[13px] text-text-sub mt-0.5 truncate">박민우 · 위키북스</p>
+    <p class="text-[12px] font-medium text-badge-red mt-1 font-mono">반납 기한: 2025.02.17 (D+7, 연체)</p>
+  </div>
+</article>
+<!-- Rented 2: 연체 -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('rented-2')">
+  
+  <div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+    <img class="w-full h-full object-cover" data-alt="만들면서 배우는 AI 에이전트 개발 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbpKMsJRT3Db4vFxVeB2cjzJuNpfbZZkgHIewFN351wzNEY_JBvCoekA71g6EpRchETrTaPo4oXM6ura0ZfEEgwuEhw30Ib2RZV-aQo3d1TdtQjam3LCbJRZ8xSA0mUAVIkwJHTx0MhNYF0Orbo6SgEGD6sy6Pl75yNbt25I1E49TZEbUMUEUQNhxotSVE6un--rdh5kYqmbLnbax1AgHjLWBpkShVLmfrPSI-itOPLNJeundi1IZ1">
+  </div>
+  <div class="flex-1 min-w-0 flex flex-col justify-center">
+    <div class="flex items-center gap-1.5 mb-1">
+      <span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">인공지능</span>
+      <span class="text-[10px] font-bold text-badge-red px-1.5 py-0.5 rounded bg-badge-red-bg">연체 3일</span>
+    </div>
+    <h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">만들면서 배우는 AI 에이전트 개발</h2>
+    <p class="text-[13px] text-text-sub mt-0.5 truncate">최영준 · 한빛미디어</p>
+    <p class="text-[12px] font-medium text-badge-red mt-1 font-mono">반납 기한: 2025.02.21 (D+3, 연체)</p>
+  </div>
+</article>
+<!-- Rented 3: 정상 대여 중 -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('rented-3')">
+  
+  <div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+    <img class="w-full h-full object-cover" data-alt="하네스 엔지니어링 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDguq-MoqeehidiTi1P21fcxFI76xoDwueqgI332kzWS9GIp5UJIaxcpanoGHWO_JwAfqi9Vu5jZxrT7PyaQIurmDFNxV1hrH2pV5TV-mRqvoclNsrbvCZUGI7k-uZxKOigGKbQIxewOEwJmC8qHvWjJ-YZ8ofNWm1Vq9UGeIUWZ6nP4yQMuT3ZBgd9qdgnY2zRVEdyqr_v0E8eOzF_k5DOgAzjiWRrh8MpHlZonoNZ4ieGv6vAnju8">
+  </div>
+  <div class="flex-1 min-w-0 flex flex-col justify-center">
+    <div class="flex items-center gap-1.5 mb-1">
+      <span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">엔지니어링</span>
+    </div>
+    <h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">하네스 엔지니어링</h2>
+    <p class="text-[13px] text-text-sub mt-0.5 truncate">이지훈 · 에이콘출판사</p>
+    <p class="text-[12px] text-text-sub mt-1 font-mono">반납 기한: 2025.02.26 (D-3)</p>
+  </div>
+</article>
+<!-- Rented 4: 정상 대여 중 -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('rented-4')">
+  
+  <div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+    <img class="w-full h-full object-cover" data-alt="바이브 코딩 주식 자동매매 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbkwuiGqmAcm_er6LXKwFuLJmL_nB2P7uA2uAd0vWJZDQcg0Tz2ZxmmLWCEc99A53N21ETUNOY-vd52iF9n3U7BbN2Sddc-MDm5NLF95MI9N1br_PBEv0Py5XNXbiI8Qs640BGUWcNBzMhe65QibaLeDxQTaJ8KaT1agyEBSDNmqxyLIcPeTFmkN5Cd46awzLKA3vpDbZ1gT0IgGr8winjcfyZ1Lm646ycc7uWIDD57S32SsK7umzH">
+  </div>
+  <div class="flex-1 min-w-0 flex flex-col justify-center">
+    <div class="flex items-center gap-1.5 mb-1">
+      <span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">재테크·AI</span>
+    </div>
+    <h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">바이브 코딩 주식 자동매매</h2>
+    <p class="text-[13px] text-text-sub mt-0.5 truncate">조코딩 · 스마트스토어연구소</p>
+    <p class="text-[12px] text-text-sub mt-1 font-mono">반납 기한: 2025.02.28 (D-5)</p>
+  </div>
+</article>
+<!-- Rented 5: 정상 대여 중 -->
+<article class="book-card p-4 flex items-center gap-3.5 hover:bg-surface-alt/50 transition-colors cursor-pointer" onclick="navigateToDetail('rented-5')">
+  
+  <div class="w-[68px] h-[96px] rounded bg-surface-alt overflow-hidden flex-shrink-0 book-spine-shadow border border-border-line/60 relative">
+    <img class="w-full h-full object-cover" data-alt="AI가 알아서 굴려주는 월급쟁이 재테크 표지" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFatziizWVOx7VzhB3bpTCV9mP2YOVz_vvbthdIBZVfCB83cWm5fx8IdVrXwfnOx-cCPNovqbhdkit3Z2AJ_Z2SJ0nlNnI_r5Z8YVY-i5LOlThDXtdybKlPzo3QvATmWWBhBdXLDdDGDMW2Tak3J668PKzG8yBeNu7jUNDHoXsz58Q3p3vhiHEE7N8outXSwlaZ138F1fF_FgfdMuLZxZHYj00H42REPY6EBPVJPxs9hfgyi1zAJDD">
+  </div>
+  <div class="flex-1 min-w-0 flex flex-col justify-center">
+    <div class="flex items-center gap-1.5 mb-1">
+      <span class="text-[10px] font-semibold text-text-sub px-1.5 py-0.5 rounded bg-surface-alt border border-border-line">재테크·경제</span>
+    </div>
+    <h2 class="text-[15px] font-bold text-text-main leading-snug line-clamp-1">AI가 알아서 굴려주는 월급쟁이 재테크</h2>
+    <p class="text-[13px] text-text-sub mt-0.5 truncate">정다운 · 스마트북스</p>
+    <p class="text-[12px] text-text-sub mt-1 font-mono">반납 기한: 2025.03.01 (D-6)</p>
+  </div>
+</article></div>
+</section>
+</div>
+<!-- 토스트 알림 -->
+<div class="fixed bottom-20 left-4 right-4 z-40 transform transition-all duration-300 translate-y-32 opacity-0 pointer-events-none" id="toastNotification">
+<div class="bg-text-main text-white px-4 py-3 rounded-lg shadow-lg flex items-center justify-between text-[13px]">
+<span id="toastMessage" class="">도서 상세 화면으로 이동합니다.</span>
+<button class="text-primary-light font-medium ml-3 text-[12px]" onclick="hideToast()" type="button">닫기</button>
+</div>
+</div>
+</main>
+<!-- 5. 하단 탭바: 심플한 라인 아이콘 + 깔끔한 라벨 -->
+
+<script>
+  function switchCatalogTab(tab) {
+    const btnAvailable = document.getElementById('tabBtnAvailable');
+    const btnRented = document.getElementById('tabBtnRented');
+    const secAvailable = document.getElementById('sectionAvailable');
+    const secRented = document.getElementById('sectionRented');
+
+    if (tab === 'available') {
+      btnAvailable.className = 'tab-btn flex-1 pb-2.5 text-center text-[14px] font-bold text-text-main border-b-2 border-primary transition-colors flex items-center justify-center gap-1.5';
+      btnRented.className = 'tab-btn flex-1 pb-2.5 text-center text-[14px] font-medium text-text-sub hover:text-text-main border-b-2 border-transparent transition-colors flex items-center justify-center gap-1.5';
+      secAvailable.classList.remove('hidden');
+      secRented.classList.add('hidden');
+    } else {
+      btnAvailable.className = 'tab-btn flex-1 pb-2.5 text-center text-[14px] font-medium text-text-sub hover:text-text-main border-b-2 border-transparent transition-colors flex items-center justify-center gap-1.5';
+      btnRented.className = 'tab-btn flex-1 pb-2.5 text-center text-[14px] font-bold text-text-main border-b-2 border-primary transition-colors flex items-center justify-center gap-1.5';
+      secAvailable.classList.add('hidden');
+      secRented.classList.remove('hidden');
+    }
+  }
+
+  function navigateToDetail(bookId) {
+    const targetLink = document.querySelector('nav a[data-path="book-detail-rent"]');
+    if (targetLink) {
+      targetLink.click();
+    } else {
+      showToast('도서 상세 화면으로 이동합니다.');
+    }
+  }
+
+  function triggerBookReturn(bookTitle) {
+    if (window.event) event.stopPropagation();
+    showToast(`'${bookTitle}' 반납이 완료되었습니다.`);
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toastNotification');
+    const toastMsg = document.getElementById('toastMessage');
+    toastMsg.textContent = msg;
+    toast.classList.remove('translate-y-32', 'opacity-0', 'pointer-events-none');
+    toast.classList.add('translate-y-0', 'opacity-100');
+    setTimeout(() => {
+      hideToast();
+    }, 2800);
+  }
+
+  function hideToast() {
+    const toast = document.getElementById('toastNotification');
+    toast.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
+    toast.classList.remove('translate-y-0', 'opacity-100');
+  }
+
+  // 검색 필터
+  document.getElementById('catalogSearchInput')?.addEventListener('input', function(e) {
+    const query = e.target.value.toLowerCase().trim();
+    const cards = document.querySelectorAll('#availableBooksList .book-card');
+    cards.forEach(card => {
+      const text = card.textContent.toLowerCase();
+      card.style.display = (!query || text.includes(query)) ? 'flex' : 'none';
+    });
+  });
+
+  // 카테고리 칩 선택
+  document.querySelectorAll('.category-chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.category-chip').forEach(c => {
+        c.className = 'category-chip px-3 py-1 rounded-full text-[12px] font-medium flex-shrink-0 bg-surface-alt text-text-sub hover:text-text-main transition-all';
+      });
+      this.className = 'category-chip active px-3 py-1 rounded-full text-[12px] font-semibold flex-shrink-0 bg-text-main text-white transition-all';
+      
+      const cat = this.getAttribute('data-category');
+      if (cat === 'MY') {
+        switchCatalogTab('rented');
+      }
+    });
+  });
+</script>
+
+
+</body></html>

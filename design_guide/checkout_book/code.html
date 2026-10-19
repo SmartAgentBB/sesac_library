@@ -1,0 +1,130 @@
+<!DOCTYPE html><html lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
+<title>대여 신청 확인 - 송파SeSAC 도서관</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Pretendard:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#1e88e5",
+            "primary-hover": "#1976d2",
+            surface: "#ffffff",
+            "surface-alt": "#f8f9fa",
+            "line-subtle": "#eef1f4",
+            "line-medium": "#e2e6ea",
+            "text-strong": "#191f28",
+            "text-normal": "#333d4b",
+            "text-subtle": "#6b7684",
+            "text-muted": "#8b95a1",
+          },
+          fontFamily: {
+            sans: ["Pretendard", "Plus Jakarta Sans", "-apple-system", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    @layer base {
+      body {
+        font-family: 'Pretendard', sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#f8f9ff] text-text-normal min-h-screen flex items-center justify-center p-4 antialiased">
+<!-- 대여 신청 확인 카드 모달 (단독 중앙 배치) -->
+<div class="w-full max-w-[358px] sm:max-w-md bg-white rounded-[24px] p-6 shadow-[0_12px_40px_rgba(25,31,40,0.08)] border border-slate-100/80 flex flex-col gap-4">
+<!-- Modal Header -->
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-blue-50 text-[#1e88e5] flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[22px]">local_library</span>
+</div>
+<div>
+<h1 class="text-[18px] font-bold text-text-strong leading-tight">대여 신청 확인</h1>
+
+</div>
+</div>
+<button aria-label="닫기" class="w-8 h-8 rounded-full bg-slate-100/70 hover:bg-slate-200/80 flex items-center justify-center text-text-subtle hover:text-text-strong transition active:scale-95" onclick="history.back()" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Question Banner -->
+<div class="py-3 px-3.5 rounded-xl bg-blue-50/70 text-text-strong flex items-center gap-2 border border-blue-100/60">
+<span class="material-symbols-outlined text-[#1e88e5] text-[20px]">help_outline</span>
+<span class="text-[14px] font-semibold">도서를 대여하시겠습니까?</span>
+</div>
+<!-- Details List (명세 카드) -->
+<div class="rounded-xl bg-[#f8f9fa] p-4 space-y-2.5 border border-line-subtle text-[13px]">
+<div class="flex justify-between items-start gap-2">
+<span class="text-text-subtle shrink-0">도서명</span>
+<span class="text-text-strong font-semibold text-right truncate">트렌드 코리아 2027</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-text-subtle">대여 신청자</span>
+<span class="text-text-strong font-medium">songpa28@iceu.kr</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-text-subtle">대여 신청일</span>
+<span class="text-text-strong font-medium">오늘 (2025.02.24)</span>
+</div>
+<div class="flex justify-between items-center pt-2 border-t border-line-subtle">
+<span class="text-text-subtle">반납 기한</span>
+<span class="text-[#1e88e5] font-bold text-[14px]">2025.03.03 (7일간)</span>
+</div>
+</div>
+<!-- Caution Policy Note (주의사항 경고 박스) -->
+<div class="rounded-xl bg-amber-50/70 p-3 flex items-start gap-2 border border-amber-200/50">
+<span class="material-symbols-outlined text-amber-600 text-[18px] shrink-0 mt-0.5">warning</span>
+<p class="text-[12px] text-amber-900 leading-snug">
+        1인당 최대 2권까지 대여 가능하며, 7일 이내에 반납해야 합니다.&nbsp;</p>
+</div>
+<!-- Modal Actions -->
+<div class="flex items-center gap-2.5 pt-1">
+<button class="flex-1 h-12 rounded-xl bg-slate-100 hover:bg-slate-200/70 active:bg-slate-200 text-text-normal font-semibold text-[15px] transition active:scale-[0.98] flex items-center justify-center" onclick="handleCancel()" type="button">
+        취소
+      </button>
+<button class="flex-1 h-12 rounded-xl bg-[#1e88e5] hover:bg-[#1976d2] active:scale-[0.98] text-white font-bold text-[15px] shadow-[0_2px_8px_rgba(30,136,229,0.25)] transition flex items-center justify-center gap-1.5" onclick="handleConfirm()" type="button">
+<span class="material-symbols-outlined text-[18px]">check</span>
+<span class="">확인</span>
+</button>
+</div>
+</div>
+<!-- Toast Notification -->
+<div class="fixed top-6 left-1/2 -translate-x-1/2 z-50 hidden items-center gap-2 px-4 py-2.5 rounded-full bg-text-strong text-white shadow-xl text-[13px] font-medium transition-all duration-300" id="toastNotification">
+<span class="material-symbols-outlined text-[18px] text-emerald-400" id="toastIcon">check_circle</span>
+<span id="toastMessage" class="">대여 신청이 완료되었습니다.</span>
+</div>
+<script>
+    function showToast(message) {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      toastMsg.textContent = message;
+      toast.classList.remove('hidden');
+      toast.classList.add('flex');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+        toast.classList.remove('flex');
+      }, 2500);
+    }
+
+    function handleConfirm() {
+      showToast('대여 신청이 완료되었습니다! (반납기한: 2025.03.03)');
+    }
+
+    function handleCancel() {
+      showToast('대여 신청이 취소되었습니다.');
+    }
+  </script>
+
+
+</body></html>

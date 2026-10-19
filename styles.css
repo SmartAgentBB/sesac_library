@@ -1,0 +1,163 @@
+/* SeSAC Library Custom Styles & Mobile Enhancements */
+
+@layer base {
+  html, body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #191f28;
+    font-family: 'Pretendard', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom, 16px), 16px);
+  }
+
+  .pt-safe {
+    padding-top: max(env(safe-area-inset-top, 16px), 16px);
+  }
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined', 'Material Symbols Rounded', sans-serif !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide scrollbars but allow scrolling */
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 3D Realistic Book Spine & Depth Shadow */
+.book-spine-shadow {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1), inset -2px 0 3px rgba(0, 0, 0, 0.08);
+}
+
+.book-hero-shadow {
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+}
+
+/* Transition animations */
+.page-fade-in {
+  animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Modal backdrop fade */
+.modal-backdrop-enter {
+  animation: backdropFade 0.2s ease-out forwards;
+}
+
+@keyframes backdropFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content-enter {
+  animation: modalScale 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalScale {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Category filter chips */
+.category-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  line-height: 1.25rem;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  background-color: #f8f9fa;
+  color: #4e5968;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+
+/* 터치 디바이스에서는 sticky hover가 일어나지 않도록 마우스 호버 지원 기기에서만 호버 색상 적용 */
+@media (hover: hover) and (pointer: fine) {
+  .category-chip:not(.active):hover {
+    color: #191f28;
+    background-color: #f1f3f5;
+  }
+}
+
+.category-chip:active {
+  transform: scale(0.96);
+}
+
+/* 활성화된 카테고리 칩 (아이폰/사파리 및 모든 브라우저에서 어두운 배경 + 하얀색 글씨 강제) */
+.category-chip.active,
+.category-chip.active:hover,
+.category-chip.active:focus,
+.category-chip.active:active {
+  background-color: #191f28 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* Ripple / active press feel */
+.btn-press:active {
+  transform: scale(0.98);
+}

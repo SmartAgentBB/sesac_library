@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>송파SeSAC 도서 대여 및 관리 시스템</title>
+
+  <!-- iOS Safari ITP & Storage Partitioning Protection -->
+  <script>
+    // *.web.app 접속 시 authDomain(*.firebaseapp.com)과 동일 출처로 즉시 전환
+    if (typeof location !== 'undefined' && location.hostname.endsWith('.web.app')) {
+      location.replace('https://' + location.hostname.replace('.web.app', '.firebaseapp.com') + location.pathname + location.search + location.hash);
+    }
+  </script>
+
+  <!-- PWA Metadata -->
+  <link rel="manifest" href="./manifest.json?v=2">
+  <meta name="theme-color" content="#0066ff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SeSAC도서관">
+
+  <!-- Apple Touch Icon for iOS Safari (Cache-busted) -->
+  <link rel="apple-touch-icon" href="./icons/icon-192.png?v=2">
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/icon-192.png?v=2">
+  <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png?v=2">
+  <link rel="apple-touch-icon" sizes="512x512" href="./icons/icon-512.png?v=2">
+  <link rel="apple-touch-icon-precomposed" href="./icons/icon-192.png?v=2">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png?v=2">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png?v=2">
+  <link rel="shortcut icon" href="./icons/icon-192.png?v=2">
+
+  <!-- Google Web Fonts & Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#0066ff",
+            "primary-hover": "#0052cc",
+            "primary-dark": "#004881",
+            "primary-light": "#e8f2ff",
+            surface: "#ffffff",
+            "surface-subtle": "#f8f9fa",
+            "surface-alt": "#f8f9fa",
+            "surface-muted": "#f1f3f5",
+            "border-subtle": "#e9ecef",
+            "border-default": "#dee2e6",
+            "border-line": "#e9ecef",
+            "text-main": "#191f28",
+            "text-sub": "#4e5968",
+            "text-muted": "#8b95a1",
+            "badge-red": "#e03131",
+            "badge-red-bg": "#fff5f5",
+            "badge-blue": "#0066ff",
+            "badge-blue-bg": "#eff6ff",
+            "badge-green": "#2b8a3e",
+            "badge-green-bg": "#ebfbee"
+          },
+          fontFamily: {
+            sans: ["Pretendard", "Plus Jakarta Sans", "-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="./styles.css">
+
+  <!-- Firebase SDKs (Compat for Zero-build Browser PWA) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-[#f8f9fa] text-text-main min-h-screen flex flex-col justify-between items-center selection:bg-primary selection:text-white">
+
+  <!-- APP SHELL CONTAINER (Mobile Centered) -->
+  <div id="appShell" class="w-full max-w-md min-h-screen bg-white flex flex-col relative shadow-xl shadow-slate-200/50">
+
+    <!-- ========================================== -->
+    <!-- 1. HOME SCREEN (로그인 화면 - design_guide/home) -->
+    <!-- ========================================== -->
+    <section id="homeView" class="w-full min-h-screen flex flex-col justify-between pt-safe pb-safe px-5 py-8 bg-[#f8f9fa]">
+      <main class="w-full flex flex-col flex-1">
+        <!-- Top Brand Header -->
+        <div class="flex flex-col items-center text-center mt-6 mb-8">
+          <img src="./icons/icon_logo_512.svg" alt="송파SeSAC 도서관" class="w-32 h-32 mb-4 object-contain" onerror="this.onerror=null; this.src='./icons/icon_logo_512.png';">
+          <span class="text-xs font-semibold text-primary tracking-wider uppercase mb-1">Songpa SeSAC Library</span>
+          <h1 class="text-2xl font-bold text-text-main tracking-tight">송파SeSAC 도서 대여 시스템</h1>
+          <p class="text-[14px] text-text-sub mt-2 leading-relaxed">
+            iceu.kr 구글 계정으로 로그인하여 도서를 대여할 수 있습니다.
+          </p>
+        </div>
+
+        <div class="space-y-4 flex-1 flex flex-col justify-center max-w-xs mx-auto w-full">
+          <!-- Google Login Button -->
+          <div class="bg-white rounded-2xl p-3 border border-border-subtle shadow-sm">
+            <button id="googleSsoBtn" type="button" class="w-full h-12 bg-white hover:bg-slate-50 active:scale-[0.98] border border-border-default rounded-xl transition-all flex items-center justify-center gap-3 px-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+              <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+              </svg>
+              <span class="text-sm font-semibold text-text-main">Google 계정으로 계속하기</span>
+            </button>
+            <div class="mt-2 text-center">
+              <span class="inline-block text-[11px] font-medium text-primary bg-primary-light px-2 py-0.5 rounded-full">
+                @iceu.kr 계정 전용
+              </span>
+            </div>
+          </div>
+
+          <!-- Minimal Loan Rules Box -->
+          <div class="bg-surface-subtle border border-border-subtle rounded-xl p-3.5 px-4">
+            <div class="flex items-center gap-1.5 text-xs font-semibold text-text-sub mb-1.5">
+              <span class="material-symbols-outlined text-[16px] text-text-muted">info</span>
+              <span>도서 대여 이용 규정</span>
+            </div>
+            <p class="text-xs text-text-muted leading-relaxed">
+              1인당 최대 <strong class="font-semibold text-text-sub">2권</strong> · 대여 기간 최대 <strong class="font-semibold text-text-sub">7일</strong>
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Bottom PWA Helper Hint -->
+        <div class="mt-8 text-center">
+          <p class="text-[11px] text-text-muted">
+            자주 이용하신다면 브라우저 메뉴의 <span class="font-medium text-text-sub">'홈 화면에 추가'</span>를 권장합니다.
+          </p>
+        </div>
+      </main>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 2. BOOK LIST SCREEN (도서 목록 화면 - design_guide/book_list) -->
+    <!-- ========================================== -->
+    <section id="bookListView" class="w-full min-h-screen flex flex-col bg-white hidden">
+      <!-- 1. Fixed Header -->
+      <header class="sticky top-0 w-full z-30 bg-white/95 backdrop-blur-md pt-safe border-b border-border-subtle">
+        <div class="h-14 px-4 flex items-center justify-between">
+          <div class="flex items-center gap-2 min-w-0">
+            <div class="w-7 h-7 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+              <span class="material-symbols-outlined text-[18px]">menu_book</span>
+            </div>
+            <h1 class="text-[17px] font-bold text-text-main tracking-tight truncate">송파SeSAC 도서관</h1>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button id="logoutBtn" class="h-8 px-2.5 flex items-center gap-1 text-text-sub hover:text-text-main hover:bg-surface-alt rounded-lg text-xs transition" title="로그아웃" type="button">
+              <span class="material-symbols-outlined text-[18px]">logout</span>
+              <span class="text-[12px] font-medium">로그아웃</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Scrollable Content -->
+      <main class="flex-1 flex flex-col w-full pb-safe">
+        <!-- 2. Rental Status Banner -->
+        <div class="px-4 pt-3 pb-2">
+          <div class="p-3.5 rounded-xl bg-surface-alt border border-border-line flex items-center justify-between shadow-xs">
+            <div class="flex flex-col">
+              <div class="flex items-center gap-1.5">
+                <span class="text-[13px] font-bold text-text-main">대여 현황</span>
+                <span id="userEmailBadge" class="text-[12px] text-primary font-mono font-medium truncate max-w-[190px]">user@iceu.kr</span>
+              </div>
+              <div class="text-[13px] text-text-sub mt-0.5">
+                대여 가능 <strong id="userAvailableQuota" class="text-primary font-bold">2권</strong>
+                <span class="mx-1 text-border-line">|</span>
+                대여 중 <strong id="userRentedCount" class="text-text-main font-bold">0권</strong>
+                <span class="text-[11px] text-text-muted">(최대 2권 / 7일간)</span>
+              </div>
+            </div>
+            <div id="userWarningPill" class="hidden">
+              <span class="px-2 py-1 rounded text-[11px] font-bold bg-badge-red-bg text-badge-red">한도초과</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Search Bar -->
+        <div class="px-4 py-2">
+          <div class="relative flex items-center">
+            <span class="material-symbols-outlined absolute left-3 text-text-muted text-[19px] pointer-events-none">search</span>
+            <input id="catalogSearchInput" class="w-full h-10 pl-9 pr-9 bg-surface-alt text-text-main placeholder:text-text-muted text-[14px] rounded-lg border border-transparent focus:border-border-default focus:ring-1 focus:ring-primary focus:bg-white transition-all outline-none" placeholder="도서명, 저자, 카테고리 검색..." type="search">
+            <button id="clearSearchBtn" class="absolute right-2.5 text-text-sub hover:text-text-main hidden" title="검색어 지우기" type="button">
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Category Filter Chips -->
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-4 py-1.5">
+          <button class="category-chip active" data-category="ALL" type="button">전체 13</button>
+          <button class="category-chip" data-category="컴퓨터/IT" type="button">컴퓨터/IT</button>
+          <button class="category-chip" data-category="경제/경영" type="button">경제/경영</button>
+        </div>
+
+        <!-- 5. Segmented Tabs (대여 가능 도서 / 대여 중) -->
+        <div class="px-4 pt-3 pb-1">
+          <div class="flex border-b border-border-line">
+            <button id="tabBtnAvailable" class="tab-btn flex-1 pb-2.5 text-center text-[14px] font-bold text-text-main border-b-2 border-primary transition-colors flex items-center justify-center gap-1.5" onclick="switchCatalogTab('available')" type="button">
+              <span>대여 가능 도서</span>
+              <span id="tabCountAvailable" class="text-[12px] font-bold text-primary">0</span>
+            </button>
+            <button id="tabBtnRented" class="tab-btn flex-1 pb-2.5 text-center text-[14px] font-medium text-text-sub hover:text-text-main border-b-2 border-transparent transition-colors flex items-center justify-center gap-1.5" onclick="switchCatalogTab('rented')" type="button">
+              <span>대여 중 도서</span>
+              <span id="tabCountRented" class="text-[12px] font-medium text-badge-red">0</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 6. SECTION 1: 대여 가능 도서 목록 -->
+        <section id="sectionAvailable" class="flex flex-col transition-opacity duration-200">
+          <div id="availableBooksList" class="flex flex-col divide-y divide-border-subtle">
+            <!-- Rendered dynamically by JavaScript -->
+          </div>
+          <div id="emptyAvailableNotice" class="hidden p-12 text-center flex flex-col items-center justify-center text-text-muted">
+            <span class="material-symbols-outlined text-[44px] mb-2 text-slate-300">menu_book</span>
+            <p class="text-sm font-medium">대여 가능한 도서가 없습니다.</p>
+          </div>
+        </section>
+
+        <!-- 7. SECTION 2: 대여 중 도서 목록 (대여일 오래된 순 정렬) -->
+        <section id="sectionRented" class="flex flex-col transition-opacity duration-200 hidden">
+          <!-- My Rented Highlight Bar -->
+          <div id="myRentedBanner" class="p-4 bg-primary-light/40 border-b border-blue-100 hidden">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-primary text-[18px]">bookmark</span>
+                <span class="text-[13px] font-bold text-primary-dark">내가 대여 중인 도서</span>
+                <span id="myRentedCountBadge" class="px-1.5 py-0.2 rounded-full text-[11px] font-bold bg-primary text-white">0</span>
+              </div>
+            </div>
+            <div id="myRentedContainer" class="space-y-2.5">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Sort & Counter Header -->
+          <div class="px-4 py-2.5 bg-surface-alt border-b border-border-subtle flex items-center justify-between text-[12px]">
+            <span class="text-text-sub font-medium flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px] text-text-muted">sort</span>
+              대여일 오래된 순 정렬
+            </span>
+            <span id="rentedHeaderTotal" class="text-[12px] text-text-muted font-mono">총 0권</span>
+          </div>
+
+          <!-- Rented Books List -->
+          <div id="rentedBooksList" class="flex flex-col divide-y divide-border-subtle">
+            <!-- Rendered dynamically by JavaScript -->
+          </div>
+
+          <div id="emptyRentedNotice" class="hidden p-12 text-center flex flex-col items-center justify-center text-text-muted">
+            <span class="material-symbols-outlined text-[44px] mb-2 text-slate-300">check_circle</span>
+            <p class="text-sm font-medium">현재 대여 중인 도서가 없습니다.</p>
+          </div>
+        </section>
+      </main>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 3. BOOK DETAIL SCREEN (도서 상세 화면 - design_guide/book_info) -->
+    <!-- ========================================== -->
+    <section id="bookDetailView" class="fixed inset-0 max-w-md mx-auto z-30 flex flex-col bg-white overflow-hidden shadow-2xl hidden">
+      <!-- 1. Scrollable Content Area: 책 표지, 제목, 도서 소개 등 전체 내용 스크롤 -->
+      <div id="detailScrollContainer" class="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+        <!-- Top Hero & Blur Background -->
+        <div id="detailHeroBg" class="relative w-full bg-gradient-to-b from-[#6b829e] via-[#94a9bf] to-[#c7d5e4] pt-safe transition-colors duration-300 overflow-hidden">
+          <!-- Soft blurred ambient gradient glow -->
+          <div id="detailBlurPoster" class="absolute inset-0 bg-cover bg-center blur-2xl scale-125 opacity-60 pointer-events-none"></div>
+          <div class="absolute inset-0 bg-black/10 pointer-events-none"></div>
+
+          <!-- Navigation Header -->
+          <header class="relative z-20 flex items-center justify-between px-4 h-14 text-white">
+            <button id="detailBackBtn" aria-label="뒤로가기" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20 active:scale-95 transition-transform" type="button">
+              <span class="material-symbols-outlined text-[26px]">arrow_back_ios_new</span>
+            </button>
+            <div class="flex items-center gap-1.5">
+              <a id="detailExternalLink" href="#" target="_blank" rel="noopener noreferrer" aria-label="서점 페이지 열기" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/20 active:scale-95 transition" title="교보문고 페이지 열기">
+                <span class="material-symbols-outlined text-[22px]">open_in_new</span>
+              </a>
+            </div>
+          </header>
+
+          <!-- Book Cover Presentation (3D Book Layout) -->
+          <div class="relative z-10 flex justify-center pt-2 pb-7 px-4">
+            <div class="relative group">
+              <!-- 3D Shadow -->
+              <div class="absolute inset-0 bg-black/35 blur-xl transform translate-y-4 scale-95 rounded-lg"></div>
+              <!-- Book Wrap -->
+              <div class="relative w-40 aspect-[1/1.45] rounded-md overflow-hidden shadow-2xl bg-white border border-white/20 book-spine-shadow">
+                <img id="detailBookCover" class="w-full h-full object-cover" src="" alt="도서 표지">
+                <div class="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/5 pointer-events-none"></div>
+                <div class="absolute left-0 top-0 bottom-0 w-2.5 bg-gradient-to-r from-black/30 via-white/10 to-transparent pointer-events-none"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- White Curved Container Overlay (Body) -->
+        <main class="relative z-20 -mt-5 bg-white rounded-t-[24px] shadow-[0_-4px_20px_rgba(0,0,0,0.06)] pb-8">
+          <div class="pt-6 px-5 max-w-lg mx-auto">
+            <!-- Status Badge -->
+            <div id="detailStatusBadge" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold mb-2.5">
+              <!-- Dynamically populated -->
+            </div>
+
+            <!-- Title -->
+            <h1 id="detailTitle" class="text-[20px] font-bold text-text-main leading-[1.35] tracking-tight">
+              도서 제목
+            </h1>
+
+            <!-- Metadata Line -->
+            <div class="mt-2 flex items-center flex-wrap gap-x-2 text-[14px] text-text-sub">
+              <span id="detailCategory">카테고리</span>
+              <span class="text-border-line">|</span>
+              <span id="detailAuthor">저자</span>
+              <span class="text-border-line">|</span>
+              <span id="detailPublisher">출판사</span>
+            </div>
+
+            <!-- Current Rental Status Details (대여 중인 경우 정보 카드 표시) -->
+            <div id="detailRentalInfoCard" class="mt-4 p-3.5 rounded-xl bg-surface-alt border border-border-line hidden">
+              <div class="flex items-center justify-between text-xs mb-1">
+                <span class="text-text-sub font-semibold">대여 정보</span>
+                <span id="detailRentalStateBadge" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary text-white">대여 중</span>
+              </div>
+              <div class="text-[13px] text-text-sub space-y-1">
+                <p>대여자: <span id="detailRentedUser" class="font-medium text-text-main">user@iceu.kr</span></p>
+                <p>대여일: <span id="detailRentDate" class="font-mono text-text-main">2026.10.15</span></p>
+                <p>반납 예정일: <span id="detailDueDate" class="font-mono font-bold text-primary">2026.10.22 (D-5)</span></p>
+              </div>
+            </div>
+
+            <!-- Tab Content Area: 도서 소개 -->
+            <div class="py-6 border-t border-border-subtle mt-5">
+              <h2 class="text-[16px] font-bold text-text-main tracking-tight mb-3">도서 소개</h2>
+              <div id="detailDescription" class="text-[14px] leading-relaxed text-text-sub space-y-3 whitespace-pre-line">
+                <!-- Rendered description -->
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <!-- 2. Separated Bottom Action Bar (스크롤과 완전히 분리되어 항상 화면 하단에 고정 표시) -->
+      <footer class="shrink-0 z-20 w-full bg-white/95 backdrop-blur-md border-t border-border-subtle pb-safe px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+        <div class="max-w-md mx-auto flex items-center gap-3">
+          <!-- Action Button: 대여 신청 or 반납하기 or 대여중 비활성 안내 -->
+          <button id="detailActionBtn" type="button" class="w-full h-12 rounded-xl bg-primary hover:bg-primary-hover active:scale-[0.98] text-white font-bold text-[16px] shadow-sm transition flex items-center justify-center gap-1.5">
+            <span>대여 신청</span>
+          </button>
+        </div>
+      </footer>
+    </section>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- 4. MODALS & TOAST NOTIFICATIONS -->
+  <!-- ========================================== -->
+
+  <!-- Modal 1: 대여 신청 확인 (design_guide/checkout_book 디자인) -->
+  <div id="checkoutModal" style="display: none;" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4">
+    <div class="w-full max-w-[358px] sm:max-w-md bg-white rounded-[24px] p-6 shadow-2xl border border-slate-100 flex flex-col gap-4 modal-content-enter">
+      <!-- Modal Header -->
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-blue-50 text-primary flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[22px]">local_library</span>
+          </div>
+          <div>
+            <h2 class="text-[18px] font-bold text-text-main leading-tight">대여 신청 확인</h2>
+          </div>
+        </div>
+        <button id="closeCheckoutModalBtn" aria-label="닫기" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-text-sub hover:text-text-main transition active:scale-95" type="button">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <!-- Question Banner -->
+      <div class="py-3 px-3.5 rounded-xl bg-blue-50/80 text-text-main flex items-center gap-2 border border-blue-100">
+        <span class="material-symbols-outlined text-primary text-[20px]">help_outline</span>
+        <span class="text-[14px] font-semibold">도서를 대여하시겠습니까?</span>
+      </div>
+
+      <!-- Details List (명세 카드) -->
+      <div class="rounded-xl bg-surface-alt p-4 space-y-2.5 border border-border-subtle text-[13px]">
+        <div class="flex justify-between items-start gap-2">
+          <span class="text-text-sub shrink-0">도서명</span>
+          <span id="checkoutModalBookTitle" class="text-text-main font-semibold text-right line-clamp-1 truncate max-w-[200px]">도서 제목</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-text-sub">대여 신청자</span>
+          <span id="checkoutModalUserEmail" class="text-text-main font-medium font-mono text-[12px]">user@iceu.kr</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-text-sub">대여 신청일</span>
+          <span id="checkoutModalRentDate" class="text-text-main font-medium">오늘</span>
+        </div>
+        <div class="flex justify-between items-center pt-2 border-t border-border-subtle">
+          <span class="text-text-sub">반납 기한</span>
+          <span id="checkoutModalDueDate" class="text-primary font-bold text-[14px]">2026.10.24 (7일간)</span>
+        </div>
+      </div>
+
+      <!-- Caution Policy Note (주의사항 경고 박스) -->
+      <div class="rounded-xl bg-amber-50/80 p-3 flex items-start gap-2 border border-amber-200/60">
+        <span class="material-symbols-outlined text-amber-600 text-[18px] shrink-0 mt-0.5">warning</span>
+        <p class="text-[12px] text-amber-900 leading-snug">
+          1인당 최대 2권까지 대여 가능하며, 7일 이내에 반납해야 합니다.
+        </p>
+      </div>
+
+      <!-- Modal Actions -->
+      <div class="flex items-center gap-2.5 pt-1">
+        <button id="cancelCheckoutBtn" class="flex-1 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-200 text-text-sub font-semibold text-[15px] transition active:scale-[0.98] flex items-center justify-center" type="button">
+          취소
+        </button>
+        <button id="confirmCheckoutBtn" class="flex-1 h-12 rounded-xl bg-primary hover:bg-primary-hover active:scale-[0.98] text-white font-bold text-[15px] shadow-[0_2px_8px_rgba(0,102,255,0.25)] transition flex items-center justify-center gap-1.5" type="button">
+          <span class="material-symbols-outlined text-[18px]">check</span>
+          <span>확인</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: 반납 확인 모달 -->
+  <div id="returnModal" style="display: none;" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4">
+    <div class="w-full max-w-[358px] sm:max-w-md bg-white rounded-[24px] p-6 shadow-2xl border border-slate-100 flex flex-col gap-4 modal-content-enter">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[22px]">assignment_return</span>
+          </div>
+          <div>
+            <h2 class="text-[18px] font-bold text-text-main leading-tight">도서 반납 확인</h2>
+          </div>
+        </div>
+        <button id="closeReturnModalBtn" aria-label="닫기" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-text-sub hover:text-text-main transition active:scale-95" type="button">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <div class="py-3 px-3.5 rounded-xl bg-emerald-50/80 text-emerald-950 flex items-center gap-2 border border-emerald-100">
+        <span class="material-symbols-outlined text-emerald-600 text-[20px]">assignment_turned_in</span>
+        <span class="text-[14px] font-semibold">도서를 반납 처리하시겠습니까?</span>
+      </div>
+
+      <div class="rounded-xl bg-surface-alt p-4 space-y-2 border border-border-subtle text-[13px]">
+        <div class="flex justify-between items-start gap-2">
+          <span class="text-text-sub shrink-0">반납 도서</span>
+          <span id="returnModalBookTitle" class="text-text-main font-semibold text-right line-clamp-1 truncate max-w-[200px]">도서 제목</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-text-sub">반납자</span>
+          <span id="returnModalUserEmail" class="text-text-main font-medium font-mono text-[12px]">user@iceu.kr</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 pt-1">
+        <button id="cancelReturnBtn" class="flex-1 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-text-sub font-semibold text-[15px] transition active:scale-[0.98] flex items-center justify-center" type="button">
+          취소
+        </button>
+        <button id="confirmReturnBtn" class="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold text-[15px] shadow-[0_2px_8px_rgba(5,150,105,0.25)] transition flex items-center justify-center gap-1.5" type="button">
+          <span class="material-symbols-outlined text-[18px]">assignment_turned_in</span>
+          <span>반납하기</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastNotification" style="display: none;" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 items-center gap-2 px-4 py-2.5 rounded-full bg-text-main text-white shadow-xl text-[13px] font-medium transition-all duration-300">
+    <span id="toastIcon" class="material-symbols-outlined text-[18px] text-emerald-400">check_circle</span>
+    <span id="toastMessage">알림 메시지</span>
+  </div>
+
+  <!-- Application Logic Modules -->
+  <script src="./firebase-config.js?v=4"></script>
+  <script src="./app.js?v=4"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          console.log('✅ SeSAC PWA ServiceWorker 등록 완료:', reg.scope);
+        }).catch((err) => {
+          console.warn('ServiceWorker 등록 실패:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
