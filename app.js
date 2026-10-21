@@ -11,6 +11,7 @@ let currentSearchQuery = '';
 let selectedBook = null;
 let pendingCheckoutBook = null;
 let pendingReturnBook = null;
+let isClosingDetail = false; // 도서 상세 화면 슬라이드 아웃 애니메이션 진행 상태 플래그
 
 // DOM 요소 캐시
 const homeView = document.getElementById('homeView');
@@ -171,6 +172,7 @@ function showScreen(screen) {
       bookListView.classList.remove('hidden');
       bookListView.setAttribute('aria-hidden', 'true');
     }
+    isClosingDetail = false;
     bookDetailView.style.transform = '';
     bookDetailView.style.webkitTransform = '';
     bookDetailView.style.opacity = '';
@@ -184,26 +186,37 @@ function showScreen(screen) {
 }
 
 /**
- * 도서 상세 화면 닫기 (목록 화면으로 복귀)
- * @param {boolean} animated - 애니메이션 적용 여부
- * @param {boolean} triggerHistoryBack - 브라우저 뒤로가기 실행 여부 (popstate를 통해 일관된 닫기 유도)
+ * 도서 상세 화면 닫기 (오른쪽으로 슬라이드 아웃 애니메이션 처리)
+ * @param {boolean} animated - 애니메이션 적용 여부 (기본 true)
+ * @param {boolean} triggerHistoryBack - 브라우저 뒤로가기 실행 여부
  */
-function closeDetailView(animated = false, triggerHistoryBack = false) {
-  // 브라우저 뒤로가기 트리거 요청이 있고 현재 상태가 상세 뷰라면 history.back() 호출
+function closeDetailView(animated = true, triggerHistoryBack = false) {
+  if (isClosingDetail) return;
+  if (!bookDetailView || bookDetailView.classList.contains('hidden')) return;
+
+  isClosingDetail = true;
+  selectedBook = null;
+
+  // 브라우저 뒤로가기 동기화 (popstate 중복 방지를 위해 isClosingDetail = true 설정 후 호출하되 return하지 않음)
   if (triggerHistoryBack) {
     if (window.location.hash.startsWith('#book-') || (window.history.state && window.history.state.screen === 'bookDetail')) {
       window.history.back();
-      return; // popstate 이벤트 핸들러에서 closeDetailView(animated, false)가 호출됨
+    }
+  } else {
+    // popstate 없이 직접 닫힌 경우 해시 정리
+    if (window.location.hash.startsWith('#book-')) {
+      window.history.replaceState({ screen: 'main' }, '', window.location.pathname + window.location.search);
     }
   }
 
-  selectedBook = null;
-
   if (animated) {
-    bookDetailView.style.transition = '-webkit-transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease-out';
+    // 오른쪽으로 화면 밖(100%)까지 미끄러져 날아가는 슬라이드 아웃 애니메이션
+    bookDetailView.style.transition = '-webkit-transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-out';
+    void bookDetailView.offsetWidth; // 브라우저 reflow 강제 발생시켜 트랜지션 확실히 트리거
     bookDetailView.style.transform = 'translate3d(100%, 0, 0)';
     bookDetailView.style.webkitTransform = 'translate3d(100%, 0, 0)';
     bookDetailView.style.opacity = '0';
+
     setTimeout(() => {
       bookDetailView.style.transform = '';
       bookDetailView.style.webkitTransform = '';
@@ -213,7 +226,8 @@ function closeDetailView(animated = false, triggerHistoryBack = false) {
       if (bookListView) {
         bookListView.removeAttribute('aria-hidden');
       }
-    }, 220);
+      isClosingDetail = false;
+    }, 250);
   } else {
     bookDetailView.style.transform = '';
     bookDetailView.style.webkitTransform = '';
@@ -223,11 +237,7 @@ function closeDetailView(animated = false, triggerHistoryBack = false) {
     if (bookListView) {
       bookListView.removeAttribute('aria-hidden');
     }
-  }
-
-  // popstate 없이 직접 닫힌 경우 해시 정리
-  if (!triggerHistoryBack && window.location.hash.startsWith('#book-')) {
-    window.history.replaceState({ screen: 'main' }, '', window.location.pathname + window.location.search);
+    isClosingDetail = false;
   }
 }
 
@@ -357,9 +367,11 @@ function setupEventListeners() {
     const isDetailOpen = bookDetailView && !bookDetailView.classList.contains('hidden');
 
     if (isDetailOpen) {
-      // 상세 화면이 열려있는데 브라우저 뒤로가기(스와이프/버튼)가 일어난 경우
+      // 이미 스와이프나 버튼 클릭으로 닫히는 애니메이션 중이라면 popstate에서 중복 호출 방지
+      if (isClosingDetail) return;
+
+      // 상세 화면이 열려있는데 브라우저 뒤로가기가 일어난 경우 -> 오른쪽 슬라이드 아웃 애니메이션 실행
       if (!state || state.screen !== 'bookDetail') {
-        // triggerHistoryBack = false로 주어 추가 history.back() 호출 방지
         closeDetailView(true, false);
       }
     } else {
@@ -388,7 +400,7 @@ function setupDetailSwipeGesture() {
 
   // 1. 공통 터치/마우스 시작 처리
   const handleStart = (clientX, clientY) => {
-    if (isTracking) return;
+    if (isTracking || isClosingDetail) return;
     if (bookDetailView.classList.contains('hidden')) return;
     if (checkoutModal && !checkoutModal.classList.contains('hidden') && checkoutModal.style.display !== 'none') return;
     if (returnModal && !returnModal.classList.contains('hidden') && returnModal.style.display !== 'none') return;
@@ -406,7 +418,7 @@ function setupDetailSwipeGesture() {
 
   // 2. 공통 터치/마우스 이동 처리
   const handleMove = (clientX, clientY, e) => {
-    if (!isTracking) return;
+    if (!isTracking || isClosingDetail) return;
 
     currentX = clientX;
     currentY = clientY;
@@ -450,29 +462,33 @@ function setupDetailSwipeGesture() {
   // 3. 공통 터치/마우스 종료 처리
   const handleEnd = () => {
     if (!isTracking && !isSwiping) return;
+    if (isClosingDetail) return;
 
     if (isSwiping) {
       const deltaX = currentX - startX;
       const deltaTime = Date.now() - startTime;
-      // 빠른 플릭(350ms 이내 & 40px 이상 이동) 또는 임계치(화면 너비의 20% 또는 60px 이상 이동)
-      const isQuickFlick = deltaTime < 350 && deltaX > 40;
-      const isThresholdPassed = deltaX > 60 || deltaX > (window.innerWidth * 0.2);
+      // 빠른 플릭(350ms 이내 & 35px 이상 이동) 또는 임계치(화면 너비의 15% 또는 50px 이상 이동)
+      const isQuickFlick = deltaTime < 350 && deltaX > 35;
+      const isThresholdPassed = deltaX > 50 || deltaX > (window.innerWidth * 0.15);
 
       if (isQuickFlick || isThresholdPassed) {
-        // 브라우저 뒤로가기(History API)와 연동하여 도서 상세 닫기
+        // 브라우저 뒤로가기(History API)와 연동하여 도서 상세 오른쪽 슬라이드 아웃 애니메이션 실행
         closeDetailView(true, true);
       } else {
-        // 원래 위치로 복귀
-        bookDetailView.style.transition = '-webkit-transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease-out';
+        // 원래 위치로 복귀 애니메이션
+        bookDetailView.style.transition = '-webkit-transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease-out';
+        void bookDetailView.offsetWidth; // 리플로우 강제
         bookDetailView.style.transform = 'translate3d(0, 0, 0)';
         bookDetailView.style.webkitTransform = 'translate3d(0, 0, 0)';
         bookDetailView.style.opacity = '1';
         setTimeout(() => {
-          bookDetailView.style.transform = '';
-          bookDetailView.style.webkitTransform = '';
-          bookDetailView.style.opacity = '';
-          bookDetailView.style.transition = '';
-        }, 200);
+          if (!isClosingDetail) {
+            bookDetailView.style.transform = '';
+            bookDetailView.style.webkitTransform = '';
+            bookDetailView.style.opacity = '';
+            bookDetailView.style.transition = '';
+          }
+        }, 220);
       }
     }
 
