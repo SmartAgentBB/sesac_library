@@ -87,6 +87,11 @@ const toastIcon = document.getElementById('toastIcon');
  * 초기 진입점
  */
 window.addEventListener('DOMContentLoaded', async () => {
+  // 브라우저 초기 history state 등록 (외부 페이지로 이탈하지 않고 웹앱 메인으로 안전 복귀 보장)
+  if (!window.history.state) {
+    window.history.replaceState({ screen: 'main' }, '', window.location.href);
+  }
+
   await loadBooksData();
   setupEventListeners();
   checkAuthAndRender();
@@ -124,8 +129,22 @@ function checkAuthAndRender() {
   if (user) {
     showScreen('bookList');
     userEmailBadge.textContent = user.email;
+    checkInitialRoute();
   } else {
     showScreen('home');
+  }
+}
+
+/**
+ * URL 해시(#book-번호)를 확인하여 상세 화면 자동 열기
+ */
+function checkInitialRoute() {
+  const hash = window.location.hash;
+  if (hash && hash.startsWith('#book-')) {
+    const bookNum = parseInt(hash.replace('#book-', ''), 10);
+    if (!isNaN(bookNum) && allBooks.some(b => b.num === bookNum)) {
+      openBookDetail(bookNum, false);
+    }
   }
 }
 
@@ -133,18 +152,25 @@ function checkAuthAndRender() {
  * 화면 전환 제어
  */
 function showScreen(screen) {
-  homeView.classList.add('hidden');
-  bookListView.classList.add('hidden');
-  bookDetailView.classList.add('hidden');
-
   if (screen === 'home') {
     homeView.classList.remove('hidden');
     homeView.classList.add('page-fade-in');
+    bookListView.classList.add('hidden');
+    bookDetailView.classList.add('hidden');
+    window.scrollTo({ top: 0, behavior: 'instant' });
   } else if (screen === 'bookList') {
+    homeView.classList.add('hidden');
     bookListView.classList.remove('hidden');
-    bookListView.classList.add('page-fade-in');
+    bookListView.removeAttribute('aria-hidden');
+    bookDetailView.classList.add('hidden');
     renderDashboard();
   } else if (screen === 'bookDetail') {
+    homeView.classList.add('hidden');
+    // bookListView는 숨기지 않고 뒤에 유지 (스와이프 제스처 시 뒤쪽에 목록이 보이도록 함)
+    if (bookListView) {
+      bookListView.classList.remove('hidden');
+      bookListView.setAttribute('aria-hidden', 'true');
+    }
     bookDetailView.style.transform = '';
     bookDetailView.style.webkitTransform = '';
     bookDetailView.style.opacity = '';
@@ -155,13 +181,24 @@ function showScreen(screen) {
       detailScrollContainer.scrollTo({ top: 0, behavior: 'instant' });
     }
   }
-  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
 /**
  * 도서 상세 화면 닫기 (목록 화면으로 복귀)
+ * @param {boolean} animated - 애니메이션 적용 여부
+ * @param {boolean} triggerHistoryBack - 브라우저 뒤로가기 실행 여부 (popstate를 통해 일관된 닫기 유도)
  */
-function closeDetailView(animated = false) {
+function closeDetailView(animated = false, triggerHistoryBack = false) {
+  // 브라우저 뒤로가기 트리거 요청이 있고 현재 상태가 상세 뷰라면 history.back() 호출
+  if (triggerHistoryBack) {
+    if (window.location.hash.startsWith('#book-') || (window.history.state && window.history.state.screen === 'bookDetail')) {
+      window.history.back();
+      return; // popstate 이벤트 핸들러에서 closeDetailView(animated, false)가 호출됨
+    }
+  }
+
+  selectedBook = null;
+
   if (animated) {
     bookDetailView.style.transition = '-webkit-transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease-out';
     bookDetailView.style.transform = 'translate3d(100%, 0, 0)';
@@ -172,16 +209,25 @@ function closeDetailView(animated = false) {
       bookDetailView.style.webkitTransform = '';
       bookDetailView.style.opacity = '';
       bookDetailView.style.transition = '';
-      selectedBook = null;
-      showScreen('bookList');
+      bookDetailView.classList.add('hidden');
+      if (bookListView) {
+        bookListView.removeAttribute('aria-hidden');
+      }
     }, 220);
   } else {
     bookDetailView.style.transform = '';
     bookDetailView.style.webkitTransform = '';
     bookDetailView.style.opacity = '';
     bookDetailView.style.transition = '';
-    selectedBook = null;
-    showScreen('bookList');
+    bookDetailView.classList.add('hidden');
+    if (bookListView) {
+      bookListView.removeAttribute('aria-hidden');
+    }
+  }
+
+  // popstate 없이 직접 닫힌 경우 해시 정리
+  if (!triggerHistoryBack && window.location.hash.startsWith('#book-')) {
+    window.history.replaceState({ screen: 'main' }, '', window.location.pathname + window.location.search);
   }
 }
 
@@ -270,7 +316,7 @@ function setupEventListeners() {
 
   // 6. 도서 상세 뒤로가기
   detailBackBtn.addEventListener('click', () => {
-    closeDetailView();
+    closeDetailView(true, true);
   });
 
   // 7. 대여 신청 확인 모달 이벤트
@@ -293,6 +339,36 @@ function setupEventListeners() {
 
   // 9. 도서 상세 화면 좌->우 슬라이드(스와이프) 제스처 등록
   setupDetailSwipeGesture();
+
+  // 10. 브라우저 뒤로가기 / 앞으로가기 제스처 이벤트 리스너 (iOS Safari 엣지 스와이프 및 Android 제스처 내비게이션 완벽 대응)
+  window.addEventListener('popstate', (e) => {
+    // 1) 열려 있는 모달이 있으면 모달부터 닫기
+    if (checkoutModal && !checkoutModal.classList.contains('hidden') && checkoutModal.style.display !== 'none') {
+      hideCheckoutModal();
+      return;
+    }
+    if (returnModal && !returnModal.classList.contains('hidden') && returnModal.style.display !== 'none') {
+      hideReturnModal();
+      return;
+    }
+
+    // 2) 상세 화면 처리
+    const state = e.state;
+    const isDetailOpen = bookDetailView && !bookDetailView.classList.contains('hidden');
+
+    if (isDetailOpen) {
+      // 상세 화면이 열려있는데 브라우저 뒤로가기(스와이프/버튼)가 일어난 경우
+      if (!state || state.screen !== 'bookDetail') {
+        // triggerHistoryBack = false로 주어 추가 history.back() 호출 방지
+        closeDetailView(true, false);
+      }
+    } else {
+      // 상세 화면이 닫혀있는데 앞으로가기 된 경우
+      if (state && state.screen === 'bookDetail' && state.bookNum) {
+        openBookDetail(state.bookNum, false);
+      }
+    }
+  });
 }
 
 /**
@@ -311,11 +387,11 @@ function setupDetailSwipeGesture() {
   let directionDecided = false;
 
   // 1. 공통 터치/마우스 시작 처리
-  const handleStart = (clientX, clientY, isMouse = false) => {
+  const handleStart = (clientX, clientY) => {
     if (isTracking) return;
     if (bookDetailView.classList.contains('hidden')) return;
-    if (checkoutModal && !checkoutModal.classList.contains('hidden')) return;
-    if (returnModal && !returnModal.classList.contains('hidden')) return;
+    if (checkoutModal && !checkoutModal.classList.contains('hidden') && checkoutModal.style.display !== 'none') return;
+    if (returnModal && !returnModal.classList.contains('hidden') && returnModal.style.display !== 'none') return;
 
     startX = clientX;
     startY = clientY;
@@ -337,15 +413,15 @@ function setupDetailSwipeGesture() {
     const deltaX = currentX - startX;
     const deltaY = currentY - startY;
 
-    // 슬라이드 방향 판정 (5px 이상 움직였을 때)
+    // 슬라이드 방향 판정 (7px 이상 움직였을 때)
     if (!directionDecided) {
       const absX = Math.abs(deltaX);
       const absY = Math.abs(deltaY);
 
-      if (absX > 5 || absY > 5) {
+      if (absX > 7 || absY > 7) {
         directionDecided = true;
-        // 세로 스크롤이거나 왼쪽 드래그(deltaX <= 0)인 경우 -> 일반 스크롤 허용하고 스와이프 취소
-        if (absY >= absX || deltaX <= 0) {
+        // 세로 스크롤 의도가 뚜렷하거나(absY > absX * 1.3), 왼쪽으로 드래그하는 경우 -> 일반 스크롤 허용하고 스와이프 취소
+        if (absY > absX * 1.3 || deltaX <= 0) {
           isTracking = false;
           bookDetailView.style.transform = '';
           bookDetailView.style.webkitTransform = '';
@@ -359,12 +435,12 @@ function setupDetailSwipeGesture() {
     }
 
     if (isSwiping && deltaX > 0) {
-      // iOS Safari에서 기본 스크롤 및 바운스 차단 (passive: false 일 때 동작)
+      // iOS Safari 및 Android에서 기본 스크롤 및 바운스 차단
       if (e && e.cancelable) {
         e.preventDefault();
       }
       const maxDist = Math.max(window.innerWidth, 380);
-      const opacity = Math.max(0.3, 1 - (deltaX / maxDist) * 0.45);
+      const opacity = Math.max(0.35, 1 - (deltaX / maxDist) * 0.45);
       bookDetailView.style.transform = `translate3d(${deltaX}px, 0, 0)`;
       bookDetailView.style.webkitTransform = `translate3d(${deltaX}px, 0, 0)`;
       bookDetailView.style.opacity = opacity.toString();
@@ -378,12 +454,13 @@ function setupDetailSwipeGesture() {
     if (isSwiping) {
       const deltaX = currentX - startX;
       const deltaTime = Date.now() - startTime;
-      // 빠른 플릭(350ms 이내 & 35px 이상 이동) 또는 임계치(55px 또는 화면의 18% 이상 이동)
-      const isQuickFlick = deltaTime < 350 && deltaX > 35;
-      const isThresholdPassed = deltaX > 55 || deltaX > (window.innerWidth * 0.18);
+      // 빠른 플릭(350ms 이내 & 40px 이상 이동) 또는 임계치(화면 너비의 20% 또는 60px 이상 이동)
+      const isQuickFlick = deltaTime < 350 && deltaX > 40;
+      const isThresholdPassed = deltaX > 60 || deltaX > (window.innerWidth * 0.2);
 
       if (isQuickFlick || isThresholdPassed) {
-        closeDetailView(true);
+        // 브라우저 뒤로가기(History API)와 연동하여 도서 상세 닫기
+        closeDetailView(true, true);
       } else {
         // 원래 위치로 복귀
         bookDetailView.style.transition = '-webkit-transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease-out';
@@ -408,7 +485,7 @@ function setupDetailSwipeGesture() {
   bookDetailView.addEventListener('touchstart', (e) => {
     if (e.touches.length !== 1) return;
     const touch = e.touches[0];
-    handleStart(touch.clientX, touch.clientY, false);
+    handleStart(touch.clientX, touch.clientY);
   }, { passive: true });
 
   window.addEventListener('touchmove', (e) => {
@@ -429,7 +506,7 @@ function setupDetailSwipeGesture() {
   bookDetailView.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
     if (e.target.closest('button, a, input, textarea, select')) return;
-    handleStart(e.clientX, e.clientY, true);
+    handleStart(e.clientX, e.clientY);
   });
 
   window.addEventListener('mousemove', (e) => {
@@ -741,13 +818,22 @@ function renderRentedList(items) {
 
 /**
  * 도서 상세 화면 열기 (design_guide/book_info)
+ * @param {number} bookNum - 도서 고유 번호
+ * @param {boolean} pushHistory - 브라우저 히스토리 스택에 push할지 여부 (popstate로 열릴 때는 false)
  */
-window.openBookDetail = function(bookNum) {
+window.openBookDetail = function(bookNum, pushHistory = true) {
   const book = allBooks.find(b => b.num === bookNum);
   if (!book) return;
   selectedBook = book;
   updateDetailView(bookNum);
   showScreen('bookDetail');
+
+  if (pushHistory) {
+    const targetHash = `#book-${bookNum}`;
+    if (window.location.hash !== targetHash) {
+      window.history.pushState({ screen: 'bookDetail', bookNum: bookNum }, '', targetHash);
+    }
+  }
 };
 
 /**

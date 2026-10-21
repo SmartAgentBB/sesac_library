@@ -169,4 +169,12 @@
   backface-visibility: hidden;
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+}
+
+#detailScrollContainer {
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+  -webkit-overflow-scrolling: touch;
 }
