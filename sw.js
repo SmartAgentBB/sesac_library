@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sesac-library-v15';
+const CACHE_NAME = 'sesac-library-v16';
 
 const STATIC_ASSETS = [
   './',

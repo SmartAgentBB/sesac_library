@@ -11,6 +11,7 @@ let currentSearchQuery = '';
 let selectedBook = null;
 let pendingCheckoutBook = null;
 let pendingReturnBook = null;
+let pendingExtendBook = null;
 let isClosingDetail = false; // 도서 상세 화면 슬라이드 아웃 애니메이션 진행 상태 플래그
 
 // DOM 요소 캐시
@@ -61,6 +62,7 @@ const detailRentalStateBadge = document.getElementById('detailRentalStateBadge')
 const detailRentedUser = document.getElementById('detailRentedUser');
 const detailRentDate = document.getElementById('detailRentDate');
 const detailDueDate = document.getElementById('detailDueDate');
+const detailExtendBtn = document.getElementById('detailExtendBtn');
 const detailActionBtn = document.getElementById('detailActionBtn');
 
 // 모달 요소
@@ -79,6 +81,14 @@ const cancelReturnBtn = document.getElementById('cancelReturnBtn');
 const confirmReturnBtn = document.getElementById('confirmReturnBtn');
 const returnModalBookTitle = document.getElementById('returnModalBookTitle');
 const returnModalUserEmail = document.getElementById('returnModalUserEmail');
+
+const extendModal = document.getElementById('extendModal');
+const closeExtendModalBtn = document.getElementById('closeExtendModalBtn');
+const cancelExtendBtn = document.getElementById('cancelExtendBtn');
+const confirmExtendBtn = document.getElementById('confirmExtendBtn');
+const extendModalBookTitle = document.getElementById('extendModalBookTitle');
+const extendModalCurrentDueDate = document.getElementById('extendModalCurrentDueDate');
+const extendModalNewDueDate = document.getElementById('extendModalNewDueDate');
 
 const toastNotification = document.getElementById('toastNotification');
 const toastMessage = document.getElementById('toastMessage');
@@ -339,12 +349,20 @@ function setupEventListeners() {
   cancelReturnBtn.addEventListener('click', hideReturnModal);
   confirmReturnBtn.addEventListener('click', handleConfirmReturn);
 
+  // 8-2. 반납일 연장 확인 모달 이벤트
+  closeExtendModalBtn.addEventListener('click', hideExtendModal);
+  cancelExtendBtn.addEventListener('click', hideExtendModal);
+  confirmExtendBtn.addEventListener('click', handleConfirmExtend);
+
   // 모달 배경 클릭 시 닫기
   checkoutModal.addEventListener('click', (e) => {
     if (e.target === checkoutModal) hideCheckoutModal();
   });
   returnModal.addEventListener('click', (e) => {
     if (e.target === returnModal) hideReturnModal();
+  });
+  extendModal.addEventListener('click', (e) => {
+    if (e.target === extendModal) hideExtendModal();
   });
 
   // 9. 도서 상세 화면 좌->우 슬라이드(스와이프) 제스처 등록
@@ -359,6 +377,10 @@ function setupEventListeners() {
     }
     if (returnModal && !returnModal.classList.contains('hidden') && returnModal.style.display !== 'none') {
       hideReturnModal();
+      return;
+    }
+    if (extendModal && !extendModal.classList.contains('hidden') && extendModal.style.display !== 'none') {
+      hideExtendModal();
       return;
     }
 
@@ -620,6 +642,7 @@ function renderMyRentedBanner(myRentals) {
     if (!book) return;
 
     const dueInfo = calculateDueInfo(rental.dueDate);
+    const extendStatus = getExtendStatus(rental);
     const item = document.createElement('div');
     item.className = 'p-3 rounded-lg bg-white border border-blue-200/80 shadow-xs flex items-center justify-between gap-3';
     item.innerHTML = `
@@ -639,10 +662,23 @@ function renderMyRentedBanner(myRentals) {
           </div>
         </div>
       </div>
-      <button type="button" class="px-2.5 py-1.5 rounded-lg ${dueInfo.isOverdue ? 'bg-badge-red hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'} text-white text-[12px] font-semibold shrink-0 shadow-xs transition flex items-center gap-1 active:scale-95" onclick="promptReturnBook(${book.num}, '${escapeString(book.title)}')">
-        <span class="material-symbols-outlined text-[15px]">assignment_return</span>
-        ${dueInfo.isOverdue ? '반납 (연체)' : '반납'}
-      </button>
+      <div class="flex items-center gap-1.5 shrink-0">
+        ${extendStatus.canExtend ? `
+          <button type="button" class="px-2.5 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-primary border border-blue-200 text-[12px] font-bold shrink-0 transition flex items-center gap-1 active:scale-95" onclick="promptExtendBook(${book.num}, '${escapeString(book.title)}')">
+            <span class="material-symbols-outlined text-[14px]">more_time</span>
+            연장
+          </button>
+        ` : `
+          <button type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 text-[12px] font-medium shrink-0 cursor-not-allowed flex items-center gap-1" disabled title="최대 2회(21일) 연장 완료">
+            <span class="material-symbols-outlined text-[14px]">block</span>
+            연장 불가
+          </button>
+        `}
+        <button type="button" class="px-2.5 py-1.5 rounded-lg ${dueInfo.isOverdue ? 'bg-badge-red hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'} text-white text-[12px] font-semibold shrink-0 shadow-xs transition flex items-center gap-1 active:scale-95" onclick="promptReturnBook(${book.num}, '${escapeString(book.title)}')">
+          <span class="material-symbols-outlined text-[15px]">assignment_return</span>
+          ${dueInfo.isOverdue ? '반납 (연체)' : '반납'}
+        </button>
+      </div>
     `;
     myRentedContainer.appendChild(item);
   });
@@ -770,6 +806,7 @@ function renderRentedList(items) {
 
   items.forEach(({ book, rental }) => {
     const dueInfo = calculateDueInfo(rental.dueDate);
+    const extendStatus = getExtendStatus(rental);
     const isMine = rental.userEmail === currentEmail;
 
     const card = document.createElement('article');
@@ -816,6 +853,17 @@ function renderRentedList(items) {
           </div>
           <div class="flex items-center gap-2">
             ${isMine ? `
+              ${extendStatus.canExtend ? `
+                <button type="button" class="px-2 py-1 rounded-md text-[11px] font-bold text-primary bg-blue-50 border border-blue-200 hover:bg-blue-100 transition flex items-center gap-0.5 shrink-0 active:scale-95" onclick="event.stopPropagation(); promptExtendBook(${book.num}, '${escapeString(book.title)}')">
+                  <span class="material-symbols-outlined text-[13px]">more_time</span>
+                  연장
+                </button>
+              ` : `
+                <button type="button" class="px-2 py-1 rounded-md text-[11px] font-medium text-slate-400 bg-slate-100 border border-slate-200 cursor-not-allowed flex items-center gap-0.5 shrink-0" disabled title="최대 2회(21일) 연장 완료">
+                  <span class="material-symbols-outlined text-[13px]">block</span>
+                  연장 불가
+                </button>
+              `}
               <button type="button" class="px-2.5 py-1 rounded-md text-[11px] font-bold text-white ${dueInfo.isOverdue ? 'bg-badge-red hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'} transition flex items-center gap-0.5 shadow-xs shrink-0 active:scale-95" onclick="event.stopPropagation(); promptReturnBook(${book.num}, '${escapeString(book.title)}')">
                 <span class="material-symbols-outlined text-[13px]">assignment_return</span>
                 반납
@@ -879,6 +927,8 @@ function updateDetailView(bookNum) {
   // 대여 상태 처리
   if (!rental) {
     // 1) 대여 가능 도서
+    detailExtendBtn.classList.add('hidden');
+    detailExtendBtn.onclick = null;
     detailStatusBadge.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[12px] font-bold mb-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200';
     detailStatusBadge.innerHTML = '<span class="material-symbols-outlined text-[16px]">check_circle</span> 대여 가능';
     detailRentalInfoCard.classList.add('hidden');
@@ -914,6 +964,7 @@ function updateDetailView(bookNum) {
   } else {
     // 2) 대여 중 도서
     const dueInfo = calculateDueInfo(rental.dueDate);
+    const extendStatus = getExtendStatus(rental);
     const isMine = (rental.userEmail === currentEmail);
 
     detailRentalInfoCard.classList.remove('hidden');
@@ -937,6 +988,22 @@ function updateDetailView(bookNum) {
 
     // ★ 룰 3: 대여중인 사람한테만 "반납하기" 버튼 표시 + 연체중이라면 "반납" 버튼을 빨간색으로 표시하기
     if (isMine) {
+      // 본인 대여 도서: 연장 버튼 표시
+      detailExtendBtn.classList.remove('hidden');
+
+      // ★ 룰 4: 연장은 2번만 가능. 대여일 기준 반납일 차이가 21일이면 더 연장할 수 없게 연장 버튼 비활성화
+      if (extendStatus.canExtend) {
+        detailExtendBtn.disabled = false;
+        detailExtendBtn.className = 'w-[105px] h-12 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-[0.98] text-primary border border-blue-200 font-bold text-[15px] transition flex items-center justify-center gap-1 shrink-0 cursor-pointer';
+        detailExtendBtn.innerHTML = '<span class="material-symbols-outlined text-[19px]">more_time</span><span>연장</span>';
+        detailExtendBtn.onclick = () => promptExtendBook(book.num, book.title);
+      } else {
+        detailExtendBtn.disabled = true;
+        detailExtendBtn.className = 'w-[105px] h-12 rounded-xl bg-slate-100 text-slate-400 border border-slate-200 font-bold text-[14px] flex items-center justify-center gap-1 shrink-0 cursor-not-allowed';
+        detailExtendBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">block</span><span>연장 불가</span>';
+        detailExtendBtn.onclick = null;
+      }
+
       if (dueInfo.isOverdue) {
         // 연체 중인 경우: 빨간색 반납 버튼
         detailActionBtn.className = 'w-full h-12 rounded-xl bg-badge-red hover:bg-rose-700 active:scale-[0.98] text-white font-bold text-[16px] shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer';
@@ -951,7 +1018,9 @@ function updateDetailView(bookNum) {
         detailActionBtn.onclick = () => promptReturnBook(book.num, book.title);
       }
     } else {
-      // 다른 사용자가 대여 중인 경우: 비활성화 버튼 표시 (반납하기 미표시)
+      // 다른 사용자가 대여 중인 경우: 연장 버튼 숨김 & 비활성화 버튼 표시 (반납하기 미표시)
+      detailExtendBtn.classList.add('hidden');
+      detailExtendBtn.onclick = null;
       detailActionBtn.className = 'w-full h-12 rounded-xl bg-slate-200 text-slate-500 font-bold text-[15px] transition flex items-center justify-center gap-1.5 cursor-not-allowed';
       detailActionBtn.disabled = true;
       detailActionBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">lock</span><span>대여 중 (반납 예정: ${dueInfo.formattedDate})</span>`;
@@ -1087,6 +1156,110 @@ async function handleConfirmReturn() {
   } finally {
     confirmReturnBtn.classList.remove('opacity-70', 'pointer-events-none');
   }
+}
+
+/**
+ * 반납일 연장 확인 모달 띄우기
+ */
+window.promptExtendBook = function(bookNum, bookTitle) {
+  const user = authManager.getCurrentUser();
+  if (!user) return;
+
+  const rental = currentRentals.find(r => r.bookNum === bookNum);
+  if (!rental) {
+    showToast('대여 정보를 찾을 수 없습니다.', true);
+    return;
+  }
+
+  // 대여일 기준 반납일 차이 및 최대 2회 연장 체크
+  const extendStatus = getExtendStatus(rental);
+  if (!extendStatus.canExtend) {
+    showToast('대여 연장은 최대 2회(대여일 기준 최대 21일)까지만 가능합니다.', true);
+    return;
+  }
+
+  const currentDueDate = new Date(rental.dueDate);
+  const newDueDate = new Date(currentDueDate.getTime() + (7 * 24 * 60 * 60 * 1000));
+  const nextCount = extendStatus.currentCount + 1;
+
+  pendingExtendBook = {
+    bookNum,
+    bookTitle,
+    rental,
+    currentDueDate,
+    newDueDate,
+    nextCount
+  };
+
+  extendModalBookTitle.textContent = bookTitle;
+  extendModalCurrentDueDate.textContent = formatDate(currentDueDate);
+  extendModalNewDueDate.textContent = `${formatDate(newDueDate)} (+7일, ${nextCount}/2회차)`;
+
+  extendModal.style.display = 'flex';
+  extendModal.classList.remove('hidden');
+};
+
+function hideExtendModal() {
+  extendModal.style.display = 'none';
+  extendModal.classList.add('hidden');
+  pendingExtendBook = null;
+}
+
+/**
+ * 반납일 연장 실행
+ */
+async function handleConfirmExtend() {
+  if (!pendingExtendBook) return;
+  const user = authManager.getCurrentUser();
+  if (!user) return;
+
+  const target = pendingExtendBook;
+
+  try {
+    confirmExtendBtn.classList.add('opacity-70', 'pointer-events-none');
+    await libraryBackend.extendRental({
+      bookNum: target.bookNum,
+      userEmail: user.email
+    });
+
+    hideExtendModal();
+    showToast(`반납일이 7일 뒤(${formatDate(target.newDueDate)})로 연장되었습니다. (${target.nextCount}/2회)`);
+
+    if (selectedBook && selectedBook.num === target.bookNum) {
+      updateDetailView(selectedBook.num);
+    }
+  } catch (err) {
+    showToast(err.message || '반납일 연장에 실패했습니다.', true);
+  } finally {
+    confirmExtendBtn.classList.remove('opacity-70', 'pointer-events-none');
+  }
+}
+
+/**
+ * 유틸: 대여 연장 가능 여부 및 연장 정보 판정
+ * 룰: 연장은 최대 2번만 가능.
+ * 대여일(rentDate) 기준으로 반납일(dueDate)을 체크해서 그 차이가 21일이면 더 연장할 수 없음.
+ */
+function getExtendStatus(rental) {
+  if (!rental || !rental.rentDate || !rental.dueDate) {
+    return { canExtend: false, diffDays: 0, currentCount: 0, isMaxExtended: false };
+  }
+
+  const rentDate = new Date(rental.rentDate);
+  const dueDate = new Date(rental.dueDate);
+  // 밀리초 차이를 일(day) 단위로 환산 (부동소수점 오차 방지를 위해 Math.round)
+  const diffDays = Math.round((dueDate.getTime() - rentDate.getTime()) / (1000 * 60 * 60 * 24));
+  
+  // 차이가 21일 이상이거나 extendCount가 2 이상이면 연장 불가
+  const isMaxExtended = (diffDays >= 21) || (rental.extendCount >= 2);
+  const currentCount = rental.extendCount || (diffDays >= 21 ? 2 : (diffDays >= 14 ? 1 : 0));
+
+  return {
+    canExtend: !isMaxExtended,
+    diffDays,
+    currentCount,
+    isMaxExtended
+  };
 }
 
 /**

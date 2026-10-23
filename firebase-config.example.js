@@ -248,6 +248,67 @@ class LibraryBackend {
     }
   }
 
+  // 도서 반납 기한 연장 요청 (기존 반납일 기준 7일 연장)
+  async extendRental({ bookNum, userEmail }) {
+    if (isFirebaseInitialized && firestoreInstance) {
+      const snapshot = await firestoreInstance.collection('rentals')
+        .where('bookNum', '==', bookNum)
+        .where('status', '==', 'RENTED')
+        .get();
+
+      if (snapshot.empty) {
+        throw new Error('대여 중인 도서를 찾을 수 없습니다.');
+      }
+
+      const doc = snapshot.docs[0];
+      const data = doc.data();
+      // 대여일 기준 반납일 차이 체크 (차이가 21일 이상이거나 이미 2회 연장한 경우 연장 불가)
+      const rentDate = new Date(data.rentDate);
+      const currentDueDate = new Date(data.dueDate);
+      const diffDays = Math.round((currentDueDate.getTime() - rentDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays >= 21 || (data.extendCount && data.extendCount >= 2)) {
+        throw new Error('대여 연장은 최대 2회(대여일 기준 최대 21일)까지만 가능합니다.');
+      }
+
+      const newDueDate = new Date(currentDueDate.getTime() + (7 * 24 * 60 * 60 * 1000));
+      const extendCount = (data.extendCount || 0) + 1;
+
+      await doc.ref.update({
+        dueDate: newDueDate.toISOString(),
+        extendCount: extendCount,
+        lastExtendedAt: new Date().toISOString()
+      });
+      return { id: doc.id, ...data, dueDate: newDueDate.toISOString(), extendCount };
+    } else {
+      const raw = localStorage.getItem(this.storageKey);
+      const list = raw ? JSON.parse(raw) : [];
+      const item = list.find(r => r.bookNum === bookNum && r.status === 'RENTED');
+
+      if (!item) {
+        throw new Error('대여 중인 도서를 찾을 수 없습니다.');
+      }
+      if (item.userEmail !== userEmail) {
+        throw new Error('본인이 대여한 도서만 연장할 수 있습니다.');
+      }
+
+      // 대여일 기준 반납일 차이 체크 (차이가 21일 이상이거나 이미 2회 연장한 경우 연장 불가)
+      const rentDate = new Date(item.rentDate);
+      const currentDueDate = new Date(item.dueDate);
+      const diffDays = Math.round((currentDueDate.getTime() - rentDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (diffDays >= 21 || (item.extendCount && item.extendCount >= 2)) {
+        throw new Error('대여 연장은 최대 2회(대여일 기준 최대 21일)까지만 가능합니다.');
+      }
+
+      const newDueDate = new Date(currentDueDate.getTime() + (7 * 24 * 60 * 60 * 1000));
+      item.dueDate = newDueDate.toISOString();
+      item.extendCount = (item.extendCount || 0) + 1;
+      item.lastExtendedAt = new Date().toISOString();
+
+      this.saveLocalRentals(list);
+      return item;
+    }
+  }
+
   async getAllActiveRentals() {
     if (isFirebaseInitialized && firestoreInstance) {
       const snapshot = await firestoreInstance.collection('rentals')

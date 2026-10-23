@@ -354,9 +354,14 @@
 
       <!-- 2. Separated Bottom Action Bar (스크롤과 완전히 분리되어 항상 화면 하단에 고정 표시) -->
       <footer class="shrink-0 z-20 w-full bg-white/95 backdrop-blur-md border-t border-border-subtle pb-safe px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
-        <div class="max-w-md mx-auto flex items-center gap-3">
+        <div class="max-w-md mx-auto flex items-center gap-2.5">
+          <!-- 연장 버튼 (내가 대여 중일 때 표시) -->
+          <button id="detailExtendBtn" type="button" class="hidden w-[105px] h-12 rounded-xl bg-blue-50 hover:bg-blue-100 active:scale-[0.98] text-primary border border-blue-200 font-bold text-[15px] transition flex items-center justify-center gap-1 shrink-0">
+            <span class="material-symbols-outlined text-[19px]">more_time</span>
+            <span>연장</span>
+          </button>
           <!-- Action Button: 대여 신청 or 반납하기 or 대여중 비활성 안내 -->
-          <button id="detailActionBtn" type="button" class="w-full h-12 rounded-xl bg-primary hover:bg-primary-hover active:scale-[0.98] text-white font-bold text-[16px] shadow-sm transition flex items-center justify-center gap-1.5">
+          <button id="detailActionBtn" type="button" class="w-full flex-1 h-12 rounded-xl bg-primary hover:bg-primary-hover active:scale-[0.98] text-white font-bold text-[16px] shadow-sm transition flex items-center justify-center gap-1.5">
             <span>대여 신청</span>
           </button>
         </div>
@@ -479,6 +484,55 @@
     </div>
   </div>
 
+  <!-- Modal 3: 반납일 연장 확인 모달 -->
+  <div id="extendModal" style="display: none;" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4">
+    <div class="w-full max-w-[358px] sm:max-w-md bg-white rounded-[24px] p-6 shadow-2xl border border-slate-100 flex flex-col gap-4 modal-content-enter">
+      <div class="flex items-start justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-blue-50 text-primary flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-[22px]">more_time</span>
+          </div>
+          <div>
+            <h2 class="text-[18px] font-bold text-text-main leading-tight">도서 반납 연장</h2>
+          </div>
+        </div>
+        <button id="closeExtendModalBtn" aria-label="닫기" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-text-sub hover:text-text-main transition active:scale-95" type="button">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <div class="py-3 px-3.5 rounded-xl bg-blue-50/80 text-blue-950 flex items-center gap-2 border border-blue-100">
+        <span class="material-symbols-outlined text-primary text-[20px]">help</span>
+        <span class="text-[14px] font-semibold">반납일을 미루시겠습니까?</span>
+      </div>
+
+      <div class="rounded-xl bg-surface-alt p-4 space-y-2 border border-border-subtle text-[13px]">
+        <div class="flex justify-between items-start gap-2">
+          <span class="text-text-sub shrink-0">대상 도서</span>
+          <span id="extendModalBookTitle" class="text-text-main font-semibold text-right line-clamp-1 truncate max-w-[200px]">도서 제목</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-text-sub">기존 반납 예정일</span>
+          <span id="extendModalCurrentDueDate" class="text-text-sub font-mono font-medium text-[12px]">2026.10.22</span>
+        </div>
+        <div class="flex justify-between items-center pt-2 border-t border-border-subtle">
+          <span class="text-text-main font-semibold">연장 후 반납일</span>
+          <span id="extendModalNewDueDate" class="text-primary font-mono font-bold text-[13px]">2026.10.29 (+7일)</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2.5 pt-1">
+        <button id="cancelExtendBtn" class="flex-1 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-text-sub font-semibold text-[15px] transition active:scale-[0.98] flex items-center justify-center" type="button">
+          취소
+        </button>
+        <button id="confirmExtendBtn" class="flex-1 h-12 rounded-xl bg-primary hover:bg-primary-hover active:scale-[0.98] text-white font-bold text-[15px] shadow-[0_2px_8px_rgba(0,102,255,0.25)] transition flex items-center justify-center gap-1.5" type="button">
+          <span class="material-symbols-outlined text-[18px]">check</span>
+          <span>확인</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toastNotification" style="display: none;" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 items-center gap-2 px-4 py-2.5 rounded-full bg-text-main text-white shadow-xl text-[13px] font-medium transition-all duration-300">
     <span id="toastIcon" class="material-symbols-outlined text-[18px] text-emerald-400">check_circle</span>
@@ -486,8 +540,8 @@
   </div>
 
   <!-- Application Logic Modules -->
-  <script src="./firebase-config.js?v=4"></script>
-  <script src="./app.js?v=9"></script>
+  <script src="./firebase-config.js?v=6" onerror="if(!window.libraryBackend){var s=document.createElement('script');s.src='./firebase-config.example.js?v=6';document.body.appendChild(s);}"></script>
+  <script src="./app.js?v=12"></script>
 
   <!-- Service Worker Registration -->
   <script>
