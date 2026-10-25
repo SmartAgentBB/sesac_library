@@ -262,6 +262,10 @@ class LibraryBackend {
 
       const doc = snapshot.docs[0];
       const data = doc.data();
+      if (data.userEmail !== userEmail) {
+        throw new Error('본인이 대여한 도서만 연장할 수 있습니다.');
+      }
+
       // 대여일 기준 반납일 차이 체크 (차이가 21일 이상이거나 이미 2회 연장한 경우 연장 불가)
       const rentDate = new Date(data.rentDate);
       const currentDueDate = new Date(data.dueDate);
