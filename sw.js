@@ -1,10 +1,10 @@
-const CACHE_NAME = 'sesac-library-v16';
+const CACHE_NAME = 'sesac-library-v17';
 
 const STATIC_ASSETS = [
   './',
   './index.html',
   './app.js',
-  './app.js?v=12',
+  './app.js?v=13',
   './firebase-config.js',
   './firebase-config.js?v=6',
   './styles.css',
@@ -64,8 +64,8 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
 
-  // Firestore or Auth API should bypass cache
-  if (url.hostname.includes('firestore') || url.hostname.includes('firebase') || url.hostname.includes('googleapis')) {
+  // Firestore, Auth API 및 도서 데이터(collected_books.json)는 캐시를 우회하여 항상 최신 데이터 로드
+  if (url.hostname.includes('firestore') || url.hostname.includes('firebase') || url.hostname.includes('googleapis') || url.pathname.includes('collected_books.json')) {
     return;
   }
 

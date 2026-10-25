@@ -129,7 +129,8 @@ window.addEventListener('DOMContentLoaded', async () => {
  */
 async function loadBooksData() {
   try {
-    const res = await fetch('./collected_books.json');
+    // 캐시 방지 파라미터(?t=timestamp)를 추가하여 항상 최신 도서 데이터를 로드
+    const res = await fetch(`./collected_books.json?t=${Date.now()}`);
     if (!res.ok) throw new Error('도서 목록 로드 실패');
     allBooks = await res.json();
     console.log(`✅ 총 ${allBooks.length}권의 도서 로드 완료`);

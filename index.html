@@ -199,7 +199,7 @@
 
         <!-- 4. Category Filter Chips -->
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-4 py-1.5">
-          <button class="category-chip active" data-category="ALL" type="button">전체 13</button>
+          <button class="category-chip active" data-category="ALL" type="button">전체</button>
           <button class="category-chip" data-category="컴퓨터/IT" type="button">컴퓨터/IT</button>
           <button class="category-chip" data-category="경제/경영" type="button">경제/경영</button>
         </div>
@@ -542,13 +542,14 @@
 
   <!-- Application Logic Modules -->
   <script src="./firebase-config.js?v=6" onerror="if(!window.libraryBackend){var s=document.createElement('script');s.src='./firebase-config.example.js?v=6';document.body.appendChild(s);}"></script>
-  <script src="./app.js?v=12"></script>
+  <script src="./app.js?v=13"></script>
 
   <!-- Service Worker Registration -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then((reg) => {
+          reg.update();
           console.log('✅ SeSAC PWA ServiceWorker 등록 완료:', reg.scope);
         }).catch((err) => {
           console.warn('ServiceWorker 등록 실패:', err);
