@@ -18,6 +18,7 @@ let isClosingDetail = false; // 도서 상세 화면 슬라이드 아웃 애니�
 const homeView = document.getElementById('homeView');
 const bookListView = document.getElementById('bookListView');
 const bookDetailView = document.getElementById('bookDetailView');
+const detailBackdrop = document.getElementById('detailBackdrop');
 
 const googleSsoBtn = document.getElementById('googleSsoBtn');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -103,6 +104,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     window.history.replaceState({ screen: 'main' }, '', window.location.href);
   }
 
+  // 로컬 개발/테스트 편의 (?demo=true 또는 ?test=true 접속 시 자동 로그인 지원)
+  const urlParams = new URLSearchParams(window.location.search);
+  if ((urlParams.get('demo') === 'true' || urlParams.get('test') === 'true') && !authManager.getCurrentUser()) {
+    authManager.signInWithDemoUser('student@iceu.kr', '송파수강생');
+  }
+
   await loadBooksData();
   setupEventListeners();
   checkAuthAndRender();
@@ -168,12 +175,20 @@ function showScreen(screen) {
     homeView.classList.add('page-fade-in');
     bookListView.classList.add('hidden');
     bookDetailView.classList.add('hidden');
+    if (detailBackdrop) {
+      detailBackdrop.classList.add('hidden');
+      detailBackdrop.style.opacity = '0';
+    }
     window.scrollTo({ top: 0, behavior: 'instant' });
   } else if (screen === 'bookList') {
     homeView.classList.add('hidden');
     bookListView.classList.remove('hidden');
     bookListView.removeAttribute('aria-hidden');
     bookDetailView.classList.add('hidden');
+    if (detailBackdrop) {
+      detailBackdrop.classList.add('hidden');
+      detailBackdrop.style.opacity = '0';
+    }
     renderDashboard();
   } else if (screen === 'bookDetail') {
     homeView.classList.add('hidden');
@@ -183,9 +198,16 @@ function showScreen(screen) {
       bookListView.setAttribute('aria-hidden', 'true');
     }
     isClosingDetail = false;
-    bookDetailView.style.transform = '';
-    bookDetailView.style.webkitTransform = '';
-    bookDetailView.style.opacity = '';
+
+    // 딤 배경 활성화
+    if (detailBackdrop) {
+      detailBackdrop.classList.remove('hidden');
+      detailBackdrop.style.transition = 'opacity 0.24s ease-out';
+      detailBackdrop.style.opacity = '1';
+    }
+
+    bookDetailView.style.transform = 'translate3d(0, 0, 0)';
+    bookDetailView.style.webkitTransform = 'translate3d(0, 0, 0)';
     bookDetailView.style.transition = '';
     bookDetailView.classList.remove('hidden');
     bookDetailView.classList.add('page-fade-in');
@@ -207,7 +229,7 @@ function closeDetailView(animated = true, triggerHistoryBack = false) {
   isClosingDetail = true;
   selectedBook = null;
 
-  // 브라우저 뒤로가기 동기화 (popstate 중복 방지를 위해 isClosingDetail = true 설정 후 호출하되 return하지 않음)
+  // 브라우저 뒤로가기 동기화 (popstate 중복 방지를 위해 isClosingDetail = true 설정 후 호출)
   if (triggerHistoryBack) {
     if (window.location.hash.startsWith('#book-') || (window.history.state && window.history.state.screen === 'bookDetail')) {
       window.history.back();
@@ -220,30 +242,41 @@ function closeDetailView(animated = true, triggerHistoryBack = false) {
   }
 
   if (animated) {
+    // 딤 배경 페이드아웃
+    if (detailBackdrop) {
+      detailBackdrop.style.transition = 'opacity 0.24s ease-out';
+      detailBackdrop.style.opacity = '0';
+    }
+
     // 오른쪽으로 화면 밖(100%)까지 미끄러져 날아가는 슬라이드 아웃 애니메이션
-    bookDetailView.style.transition = '-webkit-transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease-out';
+    bookDetailView.style.transition = '-webkit-transform 0.24s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.24s cubic-bezier(0.2, 0.9, 0.3, 1)';
     void bookDetailView.offsetWidth; // 브라우저 reflow 강제 발생시켜 트랜지션 확실히 트리거
     bookDetailView.style.transform = 'translate3d(100%, 0, 0)';
     bookDetailView.style.webkitTransform = 'translate3d(100%, 0, 0)';
-    bookDetailView.style.opacity = '0';
 
     setTimeout(() => {
       bookDetailView.style.transform = '';
       bookDetailView.style.webkitTransform = '';
-      bookDetailView.style.opacity = '';
       bookDetailView.style.transition = '';
       bookDetailView.classList.add('hidden');
+      if (detailBackdrop) {
+        detailBackdrop.classList.add('hidden');
+        detailBackdrop.style.opacity = '0';
+      }
       if (bookListView) {
         bookListView.removeAttribute('aria-hidden');
       }
       isClosingDetail = false;
-    }, 250);
+    }, 240);
   } else {
     bookDetailView.style.transform = '';
     bookDetailView.style.webkitTransform = '';
-    bookDetailView.style.opacity = '';
     bookDetailView.style.transition = '';
     bookDetailView.classList.add('hidden');
+    if (detailBackdrop) {
+      detailBackdrop.classList.add('hidden');
+      detailBackdrop.style.opacity = '0';
+    }
     if (bookListView) {
       bookListView.removeAttribute('aria-hidden');
     }
@@ -435,10 +468,15 @@ function setupDetailSwipeGesture() {
     isTracking = true;
     isSwiping = false;
     directionDecided = false;
+
+    // 드래그 시작 즉시 이전 트랜지션 해제하여 손가락/마우스를 100% 즉각 추종
     bookDetailView.style.transition = 'none';
+    if (detailBackdrop) {
+      detailBackdrop.style.transition = 'none';
+    }
   };
 
-  // 2. 공통 터치/마우스 이동 처리
+  // 2. 공통 터치/마우스 이동 처리 (실시간 translate3d로 화면이 오른쪽으로 밀려남)
   const handleMove = (clientX, clientY, e) => {
     if (!isTracking || isClosingDetail) return;
 
@@ -447,68 +485,86 @@ function setupDetailSwipeGesture() {
     const deltaX = currentX - startX;
     const deltaY = currentY - startY;
 
-    // 슬라이드 방향 판정 (7px 이상 움직였을 때)
+    // 방향 미결정 구간: 수직 스크롤인지 수평 스와이프인지 정밀 판정
     if (!directionDecided) {
       const absX = Math.abs(deltaX);
       const absY = Math.abs(deltaY);
 
-      if (absX > 7 || absY > 7) {
+      // 손가락이 6px 이상 움직였을 때 판정 시작
+      if (absX > 6 || absY > 6) {
         directionDecided = true;
-        // 세로 스크롤 의도가 뚜렷하거나(absY > absX * 1.3), 왼쪽으로 드래그하는 경우 -> 일반 스크롤 허용하고 스와이프 취소
-        if (absY > absX * 1.3 || deltaX <= 0) {
+        // 오른쪽으로 드래그하고 있고, 수평 성분이 충분히 유의미할 때 (대각선 스와이프 허용)
+        if (deltaX > 3 && absX >= absY * 0.75) {
+          isSwiping = true;
+        } else {
+          // 세로 스크롤 의도가 뚜렷하거나 왼쪽으로 당기는 경우 -> 일반 스크롤 허용하고 스와이프 취소
           isTracking = false;
           bookDetailView.style.transform = '';
           bookDetailView.style.webkitTransform = '';
-          bookDetailView.style.opacity = '';
+          if (detailBackdrop) {
+            detailBackdrop.style.opacity = '1';
+          }
           return;
-        } else {
-          // 오른쪽 슬라이드로 확정
-          isSwiping = true;
         }
       }
     }
 
+    // 오른쪽 스와이프가 확정된 경우: 실시간으로 도서 상세 뷰를 오른쪽으로 이동
     if (isSwiping && deltaX > 0) {
-      // iOS Safari 및 Android에서 기본 스크롤 및 바운스 차단
+      // 브라우저 기본 스크롤 및 엣지 가로채기 차단
       if (e && e.cancelable) {
         e.preventDefault();
       }
-      const maxDist = Math.max(window.innerWidth, 380);
-      const opacity = Math.max(0.35, 1 - (deltaX / maxDist) * 0.45);
-      bookDetailView.style.transform = `translate3d(${deltaX}px, 0, 0)`;
-      bookDetailView.style.webkitTransform = `translate3d(${deltaX}px, 0, 0)`;
-      bookDetailView.style.opacity = opacity.toString();
+
+      const translateX = Math.max(0, deltaX);
+      bookDetailView.style.transform = `translate3d(${translateX}px, 0, 0)`;
+      bookDetailView.style.webkitTransform = `translate3d(${translateX}px, 0, 0)`;
+
+      // 뒤쪽 딤 오버레이 불투명도 실시간 조절
+      if (detailBackdrop) {
+        const maxW = Math.max(window.innerWidth, 360);
+        const progress = Math.min(1, translateX / maxW);
+        detailBackdrop.style.opacity = Math.max(0, 1 - progress * 1.15).toFixed(3);
+      }
     }
   };
 
-  // 3. 공통 터치/마우스 종료 처리
+  // 3. 공통 터치/마우스 종료 처리 (손을 뗐을 때 슬라이드 아웃 완료 또는 스냅백 복귀)
   const handleEnd = () => {
     if (!isTracking && !isSwiping) return;
     if (isClosingDetail) return;
 
     if (isSwiping) {
       const deltaX = currentX - startX;
-      const deltaTime = Date.now() - startTime;
-      // 빠른 플릭(350ms 이내 & 35px 이상 이동) 또는 임계치(화면 너비의 15% 또는 50px 이상 이동)
-      const isQuickFlick = deltaTime < 350 && deltaX > 35;
-      const isThresholdPassed = deltaX > 50 || deltaX > (window.innerWidth * 0.15);
+      const deltaTime = Math.max(1, Date.now() - startTime);
+      const velocityX = deltaX / deltaTime; // 속도 (px/ms)
+
+      // 빠른 플릭(320ms 이내 & 35px 이상 이동 또는 속도 0.4px/ms 이상) 또는 충분한 이동 거리(70px 이상)
+      const isQuickFlick = (deltaTime < 320 && deltaX > 35) || (velocityX > 0.4);
+      const isThresholdPassed = deltaX > 70 || deltaX > (window.innerWidth * 0.18);
 
       if (isQuickFlick || isThresholdPassed) {
-        // 브라우저 뒤로가기(History API)와 연동하여 도서 상세 오른쪽 슬라이드 아웃 애니메이션 실행
+        // 부드럽게 화면 오른쪽 바깥으로 미끄러져 나가며 도서 상세 닫기
         closeDetailView(true, true);
       } else {
-        // 원래 위치로 복귀 애니메이션
-        bookDetailView.style.transition = '-webkit-transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease-out';
+        // 원래 위치로 탄력 있게 복귀 (스냅백)
+        bookDetailView.style.transition = '-webkit-transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1), transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1)';
         void bookDetailView.offsetWidth; // 리플로우 강제
         bookDetailView.style.transform = 'translate3d(0, 0, 0)';
         bookDetailView.style.webkitTransform = 'translate3d(0, 0, 0)';
-        bookDetailView.style.opacity = '1';
+        if (detailBackdrop) {
+          detailBackdrop.style.transition = 'opacity 0.22s ease-out';
+          detailBackdrop.style.opacity = '1';
+        }
+
         setTimeout(() => {
           if (!isClosingDetail) {
             bookDetailView.style.transform = '';
             bookDetailView.style.webkitTransform = '';
-            bookDetailView.style.opacity = '';
             bookDetailView.style.transition = '';
+            if (detailBackdrop) {
+              detailBackdrop.style.transition = '';
+            }
           }
         }, 220);
       }
@@ -519,7 +575,7 @@ function setupDetailSwipeGesture() {
     directionDecided = false;
   };
 
-  // --- [모바일 터치 이벤트: iOS Safari & Android] ---
+  // --- [모바일 터치 이벤트: iOS Safari & Android Chrome 완벽 지원] ---
   bookDetailView.addEventListener('touchstart', (e) => {
     if (e.touches.length !== 1) return;
     const touch = e.touches[0];
@@ -540,9 +596,9 @@ function setupDetailSwipeGesture() {
     handleEnd();
   }, { passive: true });
 
-  // --- [데스크톱 마우스 이벤트] ---
+  // --- [데스크톱 마우스 드래그 이벤트 지원 (로컬 테스트 및 PC 브라우저 대응)] ---
   bookDetailView.addEventListener('mousedown', (e) => {
-    if (e.button !== 0) return;
+    if (e.button !== 0) return; // 좌클릭만 허용
     if (e.target.closest('button, a, input, textarea, select')) return;
     handleStart(e.clientX, e.clientY);
   });

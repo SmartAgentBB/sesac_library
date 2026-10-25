@@ -164,17 +164,37 @@
 
 /* 도서 상세 화면 스와이프 제스처 최적화 */
 #bookDetailView {
-  will-change: transform, opacity;
+  will-change: transform;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
-  touch-action: pan-y;
+  touch-action: manipulation;
   overscroll-behavior-x: none;
+  -webkit-user-select: none;
+  user-select: none;
+  box-shadow: -10px 0 35px rgba(0, 0, 0, 0.18), 0 0 15px rgba(0, 0, 0, 0.08);
+}
+
+#bookDetailView img {
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 #detailScrollContainer {
-  touch-action: pan-y;
   overscroll-behavior-x: none;
   -webkit-overflow-scrolling: touch;
 }
+
+/* 도서 상세 화면 뒤 딤(배경 어둡게) 오버레이 */
+#detailBackdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  z-index: 35;
+  pointer-events: none;
+  transition: opacity 0.24s ease-out;
+  opacity: 0;
+}
+

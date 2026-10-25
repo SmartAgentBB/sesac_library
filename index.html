@@ -74,7 +74,7 @@
   </script>
 
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="./styles.css?v=9">
+  <link rel="stylesheet" href="./styles.css?v=10">
 
   <!-- Firebase SDKs (Compat for Zero-build Browser PWA) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -270,7 +270,8 @@
     <!-- ========================================== -->
     <!-- 3. BOOK DETAIL SCREEN (도서 상세 화면 - design_guide/book_info) -->
     <!-- ========================================== -->
-    <section id="bookDetailView" class="fixed inset-0 max-w-md mx-auto z-30 flex flex-col bg-white overflow-hidden shadow-2xl hidden">
+    <div id="detailBackdrop" class="hidden"></div>
+    <section id="bookDetailView" class="fixed inset-0 max-w-md mx-auto z-40 flex flex-col bg-white overflow-hidden shadow-2xl hidden">
       <!-- 1. Scrollable Content Area: 책 표지, 제목, 도서 소개 등 전체 내용 스크롤 -->
       <div id="detailScrollContainer" class="flex-1 min-h-0 overflow-y-auto overscroll-contain">
         <!-- Top Hero & Blur Background -->

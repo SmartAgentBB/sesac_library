@@ -4,11 +4,11 @@ const STATIC_ASSETS = [
   './',
   './index.html',
   './app.js',
-  './app.js?v=9',
+  './app.js?v=12',
   './firebase-config.js',
-  './firebase-config.js?v=4',
+  './firebase-config.js?v=6',
   './styles.css',
-  './styles.css?v=9',
+  './styles.css?v=10',
   './manifest.json',
   './manifest.json?v=2',
   './collected_books.json',
@@ -32,7 +32,8 @@ const STATIC_ASSETS = [
   './images/10_만들면서 배우는 AI 에이전트 개발.jpg',
   './images/11_하네스 엔지니어링.jpg',
   './images/12_바이브 코딩 주식 자동매매.jpg',
-  './images/13_AI가 알아서 굴려주는 월급쟁이 재테크.jpg'
+  './images/13_AI가 알아서 굴려주는 월급쟁이 재테크.jpg',
+  './images/14_대표님, 보안은 IT가 아니라 경영입니다.jpg'
 ];
 
 self.addEventListener('install', (event) => {
